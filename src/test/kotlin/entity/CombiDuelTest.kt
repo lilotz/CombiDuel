@@ -3,25 +3,26 @@ package entity
 import kotlin.test.*
 
 /**
- * Testklasse für die Klasse CombiDuel der Entity-Schicht
+ * Tests for [CombiDuel]
  */
 
 class CombiDuelTest {
 
     val testPlayer1 = Player("Max")
     val testPlayer2 = Player("Moritz")
+    val testPlayers : MutableList<Player> = mutableListOf(testPlayer1, testPlayer2)
 
-    val testGame = CombiDuel(testPlayer1, testPlayer2)
+    val testGame = CombiDuel(testPlayers)
 
     @Test
     fun testCombiDuel() {
 
         /**
-         * Überprüfen, ob Playernamen vernünftig ausgegeben werden und ob die Booleans passCheck und done richtig initialisiert wurden
+         * checks if player names are displayed properly and if [CombiDuel.passCheck] and [CombiDuel.done] are initialized correctly
          */
 
-        assertEquals("Max", testGame.player1.name)
-        assertEquals("Moritz", testGame.player2.name)
+        assertEquals("Max", testGame.players[0].name)
+        assertEquals("Moritz", testGame.players[1].name)
 
         assertFalse(testGame.passCheck)
         assertFalse(testGame.done)

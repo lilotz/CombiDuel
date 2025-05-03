@@ -1,22 +1,21 @@
 package entity
 
 /**
- * Konstruktor für die Klasse "CombiDuel" mit:
- * @property player1 der 1. Spieler
- * @property player2 der 2. Spieler
- * @property passCheck Boolean, um 2 zweimal passen hintereinander festzuhalten
- * @property done Boolean, um zu überprüfen, ob Spielzug zu Ende
- * @property currentPlayer Int für aktuellen Spieler
- * @property drawStack Deque für den Nachziehstapel
- * @property tradeDeck Liste mit den 3 Karten zum Tauschen
+ * Constructor for Class "CombiDuel"
+ * @property players a list with the two players
+ * @property passCheck to check if both the players passed after each other
+ * @property done to check if the player is done
+ * @property currentPlayer determines the current player
+ * @property drawStack draw stack
+ * @property tradeDeck trade deck with always 3 cards
  */
 
-class CombiDuel(val player1 : Player, val player2 : Player)
+data class CombiDuel(val players : MutableList<Player>)
 {
     var passCheck : Boolean = false
     var done : Boolean = false
     var currentPlayer : Int = 0
     // Nachziehstapel besteht bei Beginn des Spieles aus 35 Karten und deswegen Initialisierung mit 35 Null-Elementen
-    var drawStack : ArrayDeque<Card> = ArrayDeque<Card>(35)
-    var tradeDeck : MutableList<Card> = emptyList<Card>().toMutableList()
+    val drawStack : ArrayDeque<Card> = ArrayDeque<Card>(35)
+    val tradeDeck : List<Card> = mutableListOf()
 }

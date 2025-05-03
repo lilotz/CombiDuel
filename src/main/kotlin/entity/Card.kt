@@ -1,12 +1,14 @@
 package entity
 
 /**
- * Konstruktor für die Klasse "Card" des CombiDuels mit:
- * @property suit Farbe der Karte
- * @property value Wert der Karte
+ * Constructor for the class "Card"
+ * @property suit Suit of Card
+ * @property value Value of Card
  */
 
 data class Card(val suit : CardSuit, val value : CardValue) {
-
+    /**
+     * override of toString in the format "SuitValue"
+     */
     override fun toString() = "$suit$value"
 }

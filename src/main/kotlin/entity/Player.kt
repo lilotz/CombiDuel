@@ -1,18 +1,18 @@
 package entity
 
 /**
- * Konstruktor für die Klasse "Player" mit:
- * @property name Name des Spielers
- * @property disposalArea Ablagestapel für gelegte Kombis
- * @property handCards Handkarten des Spielers
- * @property score Punktzahl des Spielers
- * @property actions Liste von Aktionen, die vom Spieler in diesem Spielzug getätigt wurden
+ * Constructor for "Player"
+ * @property name player's name
+ * @property disposalArea disposal area for played combis
+ * @property handCards player's hand cards
+ * @property score player's score
+ * @property lastAction the last played action in the current turn
  */
 
 data class Player(val name : String)
 {
-    val disposalArea : MutableList<Card> = emptyList<Card>().toMutableList()
-    val handCards : MutableList<Card> = emptyList<Card>().toMutableList()
+    val disposalArea : MutableList<Card> = mutableListOf()
+    val handCards : MutableList<Card> = mutableListOf()
     var score : Int = 0
-    var actions : MutableList<Action> = emptyList<Action>().toMutableList()
+    val lastAction : Action = Action.NULL
 }

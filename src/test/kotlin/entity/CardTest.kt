@@ -3,7 +3,7 @@ package entity
 import kotlin.test.*
 
 /**
- * Test für Klasse Card der Entity-Schicht
+ * tests for [Card]
  */
 class CardTest {
 
@@ -18,7 +18,7 @@ class CardTest {
     private val spadesChar = '\u2660' // ♠
 
     /**
-     * Überprüfen, ob alle Beispielkarten richtig zu Strings formatiert werden
+     * checks if all example cards are displayed properly as strings
      */
     @Test
     fun testToString() {
