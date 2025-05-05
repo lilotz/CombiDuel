@@ -25,5 +25,7 @@ class CardTest {
         assertEquals(heartsChar + "10", tenOfHeart.toString())
         assertEquals(diamondsChar + "J", jackOfDiamonds.toString())
         assertEquals(spadesChar + "K", kingOfSpades.toString())
+        assertEquals(1, jackOfDiamonds.value.compareTo(tenOfHeart.value))
+        assertEquals(2, kingOfSpades.value.compareTo(jackOfDiamonds.value))
     }
 }

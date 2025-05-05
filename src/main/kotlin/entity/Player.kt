@@ -14,5 +14,5 @@ data class Player(val name : String)
     val disposalArea : MutableList<Card> = mutableListOf()
     val handCards : MutableList<Card> = mutableListOf()
     var score : Int = 0
-    val lastAction : Action = Action.NULL
+    var lastAction : Action = Action.NULL
 }
