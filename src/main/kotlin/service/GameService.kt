@@ -37,11 +37,25 @@ data class GameService(private val rootService: RootService) {
         val game = CombiDuel(players)
 
         rootService.currentGame = game
-        createDrawStack()
-        createTradeDeck()
+
+       val allCards = defaultRandomCardList()
+        while(players[1].handCards.size <7){
+            players[0].handCards.add(allCards.first())
+            allCards.removeAt(0)
+            players[1].handCards.add(allCards.first())
+            allCards.removeAt(0)
+        }
+
+        while (game.tradeDeck.size < 3) {
+            game.tradeDeck.add(allCards.first())
+            allCards.removeAt(0)
+        }
+        game.tradeDeck.toList()
+
+        game.drawStack.addAll(allCards)
     }
 
-    private fun createDrawStack(){
+   /* private fun createDrawStack(){
 
     }
 
@@ -49,8 +63,9 @@ data class GameService(private val rootService: RootService) {
         val game = rootService.currentGame
         checkNotNull(game)
 
+
         //TODO: tradeDeck immutable machen (mutableList.toList())
-    }
+    }*/
 
     fun endGame(){
 
@@ -60,5 +75,13 @@ data class GameService(private val rootService: RootService) {
 
 
     }
+
+    private fun defaultRandomCardList() = List(52)
+    { index ->
+        Card(
+            CardSuit.entries[index / 8],
+            CardValue.entries[(index % 8) + 5]
+        )
+    }.shuffled().toMutableList()
 
 }
