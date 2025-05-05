@@ -79,8 +79,8 @@ data class GameService(private val rootService: RootService) {
     private fun defaultRandomCardList() = List(52)
     { index ->
         Card(
-            CardSuit.entries[index / 8],
-            CardValue.entries[(index % 8) + 5]
+            CardSuit.entries[index / 13],
+            CardValue.entries[index % 13]
         )
     }.shuffled().toMutableList()
 

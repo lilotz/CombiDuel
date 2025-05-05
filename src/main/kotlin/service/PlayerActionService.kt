@@ -72,7 +72,7 @@ data class PlayerActionService(private val rootService: RootService) {
         check(game.drawStack.isNotEmpty()) { "Draw stack is empty, no card can be drawn" }
         check(curPlayer.handCards.size < 10) {"You can't have more than 10 hand cards" }
 
-        curPlayer.handCards.add(game.drawStack.first())
+        curPlayer.handCards.add(game.drawStack.removeFirst())
 
         // if the last action isn't NULL, the DRAW is the 2nd one and since one can play only 2 actions
         // in a turn, the turn of the player automatically ends
