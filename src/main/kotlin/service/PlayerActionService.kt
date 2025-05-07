@@ -109,6 +109,7 @@ data class PlayerActionService(private val rootService: RootService) {
         val curPlayer = game.players[game.currentPlayer]
         check(curPlayer.lastAction != Action.COMBI) { "You can only play a Combi once a turn" }
         check(combi.size > 2 && combi.size < 11) {"You have to choose at least 2 and at max 10 cards"}
+        val oldScore = curPlayer.score
         for (i in combi.indices){
             check(combi[i] < curPlayer.handCards.size){"The chosen cards are not part of your hand cards"}}
 
@@ -117,10 +118,14 @@ data class PlayerActionService(private val rootService: RootService) {
         // quadruple
         else if (combi.size == 4) {playQuadruple(combi)}
         // sequence
-        else if (combi.isNotEmpty()) {playSequence(combi)}
+        if (combi.isNotEmpty()) {playSequence(combi)}
         // since we empty combi after receiving a valid combi if everything does not apply,
         // it was not a valid combi
-        else {throw IllegalArgumentException("The cards you've chosen were not a valid combi")}
+        if(curPlayer.score == oldScore)
+        {throw IllegalArgumentException("The cards you've chosen were not a valid combi")}
+        //TODO: wenn man mehr als eine Karten-Kombi in einem Zug spielen will
+        curPlayer.lastAction = Action.COMBI
+        rootService.gameService.endTurn()
     }
 
     /**
@@ -143,6 +148,7 @@ data class PlayerActionService(private val rootService: RootService) {
     private fun playTriple(combi : MutableList<Int>){
         val game = rootService.currentGame
         checkNotNull(game)
+        combi.sortByDescending { it  }
         val curPlayer = game.players[game.currentPlayer]
         for(i in 1..2){
             if(curPlayer.handCards[combi[i-1]].value != curPlayer.handCards[combi[i]].value)
@@ -178,6 +184,7 @@ data class PlayerActionService(private val rootService: RootService) {
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
+        combi.sortByDescending { it  }
         for(i in 1..3){
             if(curPlayer.handCards[combi[i-1]].value != curPlayer.handCards[combi[i]].value)
             {return}
@@ -214,27 +221,17 @@ data class PlayerActionService(private val rootService: RootService) {
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
         // combi has to be sorted by values, so it can't be evaluated better
-        val combiSorted = mutableListOf<Card>()
-        for(i in combi.indices-1){
-            combiSorted.add(curPlayer.handCards[combi[i]])
-        }
-        combiSorted.sortedBy(Card::value)
+        val chosenHandCards = mutableListOf<Card>()
+        for(i in combi.indices){ chosenHandCards.add(curPlayer.handCards[combi[i]]) }
+        val chosenHandCardsSorted = chosenHandCards.sortedBy{it.value.ordinal}
 
-        for(i in combiSorted.indices-1) {
-            if(combiSorted[i].suit != combiSorted[i+1].suit)
+        for(i in 0..chosenHandCardsSorted.size-2) {
+            if(chosenHandCardsSorted[i].suit != chosenHandCardsSorted[i+1].suit)
             {return}
             // if the next card is not exactly one value bigger than the other
-            if((combiSorted[i+1].value.compareTo(combiSorted[i].value))!=1)
+            if((chosenHandCardsSorted[i+1].value.compareTo(chosenHandCardsSorted[i].value))!=1)
             {return}
         }
-//        val combiSorted = combi.sortedBy(curPlayer.handCards[combi].value)
-        /*for(i in combi.indices-1){
-            if(curPlayer.handCards[combi[i]].suit != curPlayer.handCards[combi[i+1]].suit)
-            {return}
-            // if the next card is not exactly one value bigger than the other
-            if((curPlayer.handCards[combi[i+1]].value.compareTo(curPlayer.handCards[combi[i]].value))!=1)
-            {return}
-        }*/
         for(i in combi.indices){
             curPlayer.disposalArea.add(curPlayer.handCards[combi[i]])
             curPlayer.handCards.removeAt(combi[i])
@@ -264,7 +261,8 @@ data class PlayerActionService(private val rootService: RootService) {
 
         if (game.passCheck) {rootService.gameService.endGame()}
         else {
-            if (curPlayer.lastAction == Action.NULL) {game.passCheck}
+            if (curPlayer.lastAction == Action.NULL) {game.passCheck = true}
+            else {game.passCheck = false}
             curPlayer.lastAction = Action.PASS
             rootService.gameService.endTurn()
         }
