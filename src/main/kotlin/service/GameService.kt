@@ -8,7 +8,7 @@ import entity.*
  * @param rootService the [RootService] has direct access to the entity layer and the other service methods
  */
 
-data class GameService(private val rootService: RootService) {
+data class GameService(private val rootService: RootService): AbstractRefreshingService() {
 
     /**
      * StartGame is responsible for starting a new game
@@ -23,7 +23,6 @@ data class GameService(private val rootService: RootService) {
      */
 
     fun startGame(player1Name : String, player2Name : String) {
-
         if (rootService.currentGame != null) {
             throw IllegalStateException("Game is already running")
         }
@@ -53,35 +52,29 @@ data class GameService(private val rootService: RootService) {
         game.tradeDeck.toList()
 
         game.drawStack.addAll(allCards)
+
+        onAllRefreshables { refreshAfterStartNewGame() }
     }
-
-   /* private fun createDrawStack(){
-
-    }
-
-    private fun createTradeDeck(){
-        val game = rootService.currentGame
-        checkNotNull(game)
-
-
-        //TODO: tradeDeck immutable machen (mutableList.toList())
-    }*/
 
     fun endGame(){
-
+        onAllRefreshables { refreshAfterGameEnds() }
     }
 
     fun endTurn(){
+        val game = rootService.currentGame
+        checkNotNull(game)
+        val oldCurrentPlayer = game.currentPlayer
+        game.currentPlayer = (oldCurrentPlayer+1)%game.players.size
 
-
+        onAllRefreshables { refreshAfterChangePlayer() }
     }
 
-    private fun defaultRandomCardList() = List(52)
-    { index ->
-        Card(
-            CardSuit.entries[index / 13],
-            CardValue.entries[index % 13]
-        )
-    }.shuffled().toMutableList()
+    private fun defaultRandomCardList() = List(52) {
+        index ->
+            Card(
+                CardSuit.entries[index / 13],
+                CardValue.entries[index % 13]
+            )
+        }.shuffled().toMutableList()
 
 }

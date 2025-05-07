@@ -8,7 +8,7 @@ import entity.*
  * @param rootService the [RootService] has direct access to the entity layer and the other service methods
  */
 
-data class PlayerActionService(private val rootService: RootService) {
+data class PlayerActionService(private val rootService: RootService): AbstractRefreshingService(){
 
     /**
      * Swap Cards is an action the player can choose to do once a turn
@@ -27,7 +27,7 @@ data class PlayerActionService(private val rootService: RootService) {
      * @param tradeCard the trade card the player selects
      */
 
-    fun swapCards(handCard : Int, tradeCard : Int) {
+    fun swapCards(handCard : Int, tradeCard : Int){
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
@@ -48,6 +48,8 @@ data class PlayerActionService(private val rootService: RootService) {
             rootService.gameService.endTurn()
         }
         curPlayer.lastAction = Action.SWAP
+        onAllRefreshables({refreshAfterSwapCard(curPlayer,tempHandCard, tempTradeCard)})
+        rootService.gameService.endTurn()
     }
 
     /**
@@ -80,6 +82,8 @@ data class PlayerActionService(private val rootService: RootService) {
             rootService.gameService.endTurn()
         }
         curPlayer.lastAction = Action.DRAW
+        onAllRefreshables { refreshAfterDrawCard(curPlayer) }
+        rootService.gameService.endTurn()
     }
 
     /**
@@ -112,6 +116,9 @@ data class PlayerActionService(private val rootService: RootService) {
         val oldScore = curPlayer.score
         for (i in combi.indices){
             check(combi[i] < curPlayer.handCards.size){"The chosen cards are not part of your hand cards"}}
+        //add the chosen cards to a list for refresh
+        val chosenHandCards = mutableListOf<Card>()
+        for(i in combi.indices){ chosenHandCards.add(curPlayer.handCards[combi[i]]) }
 
         // triple
         if (combi.size == 3) {playTriple(combi)}
@@ -124,7 +131,12 @@ data class PlayerActionService(private val rootService: RootService) {
         if(curPlayer.score == oldScore)
         {throw IllegalArgumentException("The cards you've chosen were not a valid combi")}
         //TODO: wenn man mehr als eine Karten-Kombi in einem Zug spielen will
+
+        // if no hand cards are left, the game ends automatically
+        if(curPlayer.handCards.isEmpty()) {rootService.gameService.endGame()}
+
         curPlayer.lastAction = Action.COMBI
+        onAllRefreshables({refreshAfterEvaluatingCombi(curPlayer,chosenHandCards)})
         rootService.gameService.endTurn()
     }
 
@@ -263,6 +275,8 @@ data class PlayerActionService(private val rootService: RootService) {
         else {
             if (curPlayer.lastAction == Action.NULL) {game.passCheck = true}
             else {game.passCheck = false}
+
+            onAllRefreshables { refreshAfterPass(curPlayer) }
             curPlayer.lastAction = Action.PASS
             rootService.gameService.endTurn()
         }
