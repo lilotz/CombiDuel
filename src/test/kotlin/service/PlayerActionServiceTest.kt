@@ -16,12 +16,12 @@ class PlayerActionServiceTest {
 
     private lateinit var rootService: RootService
 
-    private val cardsForTriple = mutableListOf<Card>(
+    private val cardsForTriple = mutableListOf(
         Card(CardSuit.HEARTS, CardValue.TEN),
         Card(CardSuit.SPADES, CardValue.TEN),
         Card(CardSuit.DIAMONDS, CardValue.TEN))
 
-    private val cardsForQuadruple = mutableListOf<Card>(
+    private val cardsForQuadruple = mutableListOf(
         Card(CardSuit.HEARTS, CardValue.JACK),
         Card(CardSuit.CLUBS, CardValue.TWO),
         Card(CardSuit.SPADES, CardValue.JACK),
@@ -29,12 +29,12 @@ class PlayerActionServiceTest {
         Card(CardSuit.DIAMONDS, CardValue.JACK),
         Card(CardSuit.CLUBS, CardValue.JACK))
 
-    private val cardsForSequence1 = mutableListOf<Card>(
+    private val cardsForSequence1 = mutableListOf(
         Card(CardSuit.CLUBS, CardValue.THREE),
         Card(CardSuit.CLUBS, CardValue.FIVE),
         Card(CardSuit.CLUBS, CardValue.FOUR))
 
-    private val cardsForSequence2 = mutableListOf<Card>(
+    private val cardsForSequence2 = mutableListOf(
         Card(CardSuit.CLUBS, CardValue.THREE),
         Card(CardSuit.CLUBS, CardValue.FOUR),
         Card(CardSuit.CLUBS, CardValue.FIVE),
@@ -52,11 +52,22 @@ class PlayerActionServiceTest {
     }
 
     /**
-     * tests swapCards by choosing a random card from the player's handcards and trading it
+     * tests swapCards by choosing a random card from the player's hand cards and trading it
      * with a random trade card from the middle
      *
      * @throws IllegalStateException if no game is active
      */
+
+    @Test
+    fun testStartGame(){
+        assertFailsWith(IllegalStateException::class, "Player1's name is empty")
+        {rootService.gameService.startGame("Max", "")}
+        assertFailsWith(IllegalStateException::class, "Player2's name is empty")
+        {rootService.gameService.startGame("", "Moritz")}
+
+        assertFailsWith(IllegalStateException::class, "Game is already running")
+        {rootService.gameService.startGame("Moritz", "Moritz")}
+    }
 
     @Test
     fun testSwapCards(){
@@ -72,6 +83,7 @@ class PlayerActionServiceTest {
         assertEquals(3, currentGame.tradeDeck.size)
         assertEquals(Action.SWAP, curPlayer.lastAction)
 
+        currentGame.currentPlayer = 0
         assertFailsWith(IllegalStateException::class, "You can only swap once a turn")
         { rootService.playerActionService.swapCards(2,1)}
 
@@ -111,6 +123,7 @@ class PlayerActionServiceTest {
         assertEquals(34, currentGame.drawStack.size)
         assertEquals(Action.DRAW, curPlayer.lastAction)
 
+        currentGame.currentPlayer = 0
         assertFailsWith(IllegalStateException::class, "You can only draw a card once a turn")
         { rootService.playerActionService.drawCard()}
 
@@ -150,6 +163,7 @@ class PlayerActionServiceTest {
         assertEquals(0, curPlayer.handCards.size)
         assertEquals(Action.COMBI, curPlayer.lastAction)
 
+        currentGame.currentPlayer = 0
         curPlayer.lastAction = Action.NULL
 
         //test for quadruple
@@ -162,6 +176,7 @@ class PlayerActionServiceTest {
         assertTrue { curPlayer.handCards.contains(Card(CardSuit.CLUBS, CardValue.TEN)) }
         assertTrue { curPlayer.handCards.contains(Card(CardSuit.CLUBS, CardValue.TWO)) }
 
+        currentGame.currentPlayer = 0
         curPlayer.lastAction = Action.NULL
 
         // test for sequence
@@ -190,7 +205,7 @@ class PlayerActionServiceTest {
         checkNotNull(currentGame)
         val curPlayer =  currentGame.players[currentGame.currentPlayer]
 
-        rootService.playerActionService.drawCard()
+        curPlayer.lastAction = Action.DRAW
         rootService.playerActionService.pass()
         assertFalse(currentGame.passCheck)
 
