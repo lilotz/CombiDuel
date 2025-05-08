@@ -15,13 +15,13 @@ import entity.*
 interface Refreshable
 
 /**
- * the necessary refreshes after starting a new game
+ * issues the necessary refreshes after starting a new game
  */
 
 fun refreshAfterStartNewGame() {}
 
 /**
- * refreshes after a valid combi was played
+ * issues the necessary refreshes after a valid combi was played
  *
  * @param player the player who played the combi
  * @param playedCombi the played cards which form a combi
@@ -30,7 +30,7 @@ fun refreshAfterStartNewGame() {}
 fun refreshAfterEvaluatingCombi(player: Player, playedCombi : List<Card>) {}
 
 /**
- * refreshes after a card was drawn from the draw stack
+ * issues the necessary refreshes after a card was drawn from the draw stack
  *
  * @param player the player who had drawn a card
  */
@@ -38,7 +38,7 @@ fun refreshAfterEvaluatingCombi(player: Player, playedCombi : List<Card>) {}
 fun refreshAfterDrawCard(player: Player) {}
 
 /**
- * refreshes after the player passed
+ * issues the necessary refreshes after the player passed
  *
  * @param player the player who passed
  */
@@ -46,7 +46,7 @@ fun refreshAfterDrawCard(player: Player) {}
 fun refreshAfterPass(player: Player) {}
 
 /**
- * refreshes after a player swapped a hand card with a trade card
+ * issues the necessary refreshes after a player swapped a hand card with a trade card
  *
  * @param player the player who swaps the cards
  * @param oldHandCard the hand card the player chose
@@ -56,13 +56,13 @@ fun refreshAfterPass(player: Player) {}
 fun refreshAfterSwapCard(player: Player, oldHandCard: Card, oldTradeCards: Card) {}
 
 /**
- * refreshes after a turn ends and the player changes
+ * issues the necessary refreshes after a turn ends and the player changes
  */
 
 fun refreshAfterChangePlayer() {}
 
 /**
- * the necessary refreshes when the game ends
+ * issues the necessary refreshes when the game ends
  */
 
 fun refreshAfterGameEnds() {}

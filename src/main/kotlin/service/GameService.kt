@@ -56,9 +56,22 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
         onAllRefreshables { refreshAfterStartNewGame() }
     }
 
+    /**
+     * EndGame is called after the games finishes which means after one player's hand cards are empty
+     * or the two players passed as their only action after each other
+     */
+
     fun endGame(){
         onAllRefreshables { refreshAfterGameEnds() }
     }
+
+    /**
+     * EndTurn is called after a player played two actions or passed
+     *
+     * It also changes the current player to the other player
+     *
+     * @throws IllegalStateException if no game is currently active
+     */
 
     fun endTurn(){
         val game = rootService.currentGame
@@ -69,6 +82,10 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
         onAllRefreshables { refreshAfterChangePlayer() }
     }
 
+    /**
+     * DefaultRandomCardLists shuffles the necessary 52 cards for the start of the game
+     */
+
     private fun defaultRandomCardList() = List(52) {
         index ->
             Card(
@@ -76,5 +93,4 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
                 CardValue.entries[index % 13]
             )
         }.shuffled().toMutableList()
-
 }
