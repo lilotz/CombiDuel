@@ -83,7 +83,7 @@ class PlayerActionServiceTest {
         assertEquals(3, currentGame.tradeDeck.size)
         assertEquals(Action.SWAP, curPlayer.lastAction)
 
-        currentGame.currentPlayer = 0
+        //currentGame.currentPlayer = 0
         assertFailsWith(IllegalStateException::class, "You can only swap once a turn")
         { rootService.playerActionService.swapCards(2,1)}
 
@@ -115,6 +115,7 @@ class PlayerActionServiceTest {
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
         val curPlayer =  currentGame.players[currentGame.currentPlayer]
+        rootService.playerActionService.swapCards(1,1)
         rootService.playerActionService.drawCard()
 
         // the player should have one more hand card than in the beginning (7)
@@ -122,6 +123,7 @@ class PlayerActionServiceTest {
         // the draw stack should be one smaller than the initial 35
         assertEquals(34, currentGame.drawStack.size)
         assertEquals(Action.DRAW, curPlayer.lastAction)
+        assertEquals(1, currentGame.currentPlayer)
 
         currentGame.currentPlayer = 0
         assertFailsWith(IllegalStateException::class, "You can only draw a card once a turn")
@@ -163,36 +165,36 @@ class PlayerActionServiceTest {
         assertEquals(0, curPlayer.handCards.size)
         assertEquals(Action.COMBI, curPlayer.lastAction)
 
-        currentGame.currentPlayer = 0
-        curPlayer.lastAction = Action.NULL
-
         //test for quadruple
         curPlayer.handCards.addAll(cardsForQuadruple)
+        curPlayer.lastAction = Action.NULL
+        curPlayer.secondActionCombi = false
+        rootService.playerActionService.drawCard()
         rootService.playerActionService.playCombi(mutableListOf(0,2,4,5))
 
         assertEquals(10+15, curPlayer.score)
-        assertEquals(2, curPlayer.handCards.size)
+        assertEquals(3, curPlayer.handCards.size)
         assertEquals(Action.COMBI, curPlayer.lastAction)
         assertTrue { curPlayer.handCards.contains(Card(CardSuit.CLUBS, CardValue.TEN)) }
         assertTrue { curPlayer.handCards.contains(Card(CardSuit.CLUBS, CardValue.TWO)) }
+        assertTrue(curPlayer.secondActionCombi)
 
-        currentGame.currentPlayer = 0
-        curPlayer.lastAction = Action.NULL
+        assertFailsWith(IllegalStateException::class, "You can only play another combi or pass")
+        {rootService.playerActionService.drawCard()}
 
         // test for sequence
         curPlayer.handCards.addAll(cardsForSequence1)
-        rootService.playerActionService.playCombi(mutableListOf(0,2,3,4))
+        rootService.playerActionService.playCombi(mutableListOf(0,3,4,5))
 
         assertEquals(25+8, curPlayer.score)
-        assertEquals(1, curPlayer.handCards.size)
+        assertEquals(2, curPlayer.handCards.size)
 
-        curPlayer.lastAction = Action.NULL
-
-        // chosen cards are not a valid combi
        curPlayer.handCards.addAll(cardsForSequence2)
 
         assertFailsWith(IllegalArgumentException::class, "The cards you've chosen were not a valid combi" )
         { rootService.playerActionService.playCombi(mutableListOf(0,1,3,4))}
+
+        rootService.playerActionService.pass()
     }
 
     /**
@@ -208,6 +210,7 @@ class PlayerActionServiceTest {
         curPlayer.lastAction = Action.DRAW
         rootService.playerActionService.pass()
         assertFalse(currentGame.passCheck)
+        assertEquals(1, currentGame.currentPlayer)
 
         curPlayer.lastAction = Action.NULL
         rootService.playerActionService.pass()

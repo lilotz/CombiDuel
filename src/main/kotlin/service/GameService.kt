@@ -68,6 +68,8 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
     /**
      * EndTurn is called after a player played two actions or passed
      *
+     * For the old player the last action is changed to NULL for the next turn
+     *
      * It also changes the current player to the other player
      *
      * @throws IllegalStateException if no game is currently active
@@ -77,6 +79,7 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
         val game = rootService.currentGame
         checkNotNull(game)
         val oldCurrentPlayer = game.currentPlayer
+        game.players[oldCurrentPlayer].lastAction = Action.NULL
         game.currentPlayer = (oldCurrentPlayer+1)%game.players.size
 
         onAllRefreshables { refreshAfterChangePlayer() }

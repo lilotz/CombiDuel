@@ -31,7 +31,10 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
-        check(curPlayer.lastAction != Action.SWAP) { "You can only swap once a turn" }
+        check(curPlayer.lastAction != Action.SWAP)
+        { "You can only swap once a turn" }
+        check(curPlayer.lastAction != Action.SWAP && curPlayer.secondActionCombi == false)
+        { "You can only play another combi or pass" }
         check(handCard <= curPlayer.handCards.size) { "Your card has to be part of your hand cards" }
         check(tradeCard <= game.tradeDeck.size) { "The trade card has to be in the trade area" }
 
@@ -49,7 +52,6 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         }
         curPlayer.lastAction = Action.SWAP
         onAllRefreshables({refreshAfterSwapCard(curPlayer,tempHandCard, tempTradeCard)})
-        rootService.gameService.endTurn()
     }
 
     /**
@@ -70,7 +72,10 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
-        check(curPlayer.lastAction != Action.DRAW) { "You can only draw a card once a turn" }
+        check(curPlayer.lastAction != Action.DRAW)
+        { "You can only draw a card once a turn" }
+        check(curPlayer.lastAction != Action.DRAW && curPlayer.secondActionCombi == false)
+        { "You can only can only play another combi or pass" }
         check(game.drawStack.isNotEmpty()) { "Draw stack is empty, no card can be drawn" }
         check(curPlayer.handCards.size < 10) {"You can't have more than 10 hand cards" }
 
@@ -83,7 +88,6 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         }
         curPlayer.lastAction = Action.DRAW
         onAllRefreshables { refreshAfterDrawCard(curPlayer) }
-        rootService.gameService.endTurn()
     }
 
     /**
@@ -111,7 +115,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
-        check(curPlayer.lastAction != Action.COMBI) { "You can only play a Combi once a turn" }
+       // check(curPlayer.lastAction != Action.COMBI) { "You can only play a Combi once a turn" }
         check(combi.size > 2 && combi.size < 11) {"You have to choose at least 2 and at max 10 cards"}
         val oldScore = curPlayer.score
         for (i in combi.indices){
@@ -130,14 +134,18 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         // it was not a valid combi
         if(curPlayer.score == oldScore)
         {throw IllegalArgumentException("The cards you've chosen were not a valid combi")}
-        //TODO: wenn man mehr als eine Karten-Kombi in einem Zug spielen will
 
         // if no hand cards are left, the game ends automatically
         if(curPlayer.handCards.isEmpty()) {rootService.gameService.endGame()}
+        // since the player can play combis as often as they want to, it needs to be distinguished between
+        // playCombi is the first action or the second
+        else if (curPlayer.lastAction != Action.NULL || curPlayer.lastAction != Action.COMBI){
+            curPlayer.secondActionCombi = true
+        }
 
         curPlayer.lastAction = Action.COMBI
         onAllRefreshables({refreshAfterEvaluatingCombi(curPlayer,chosenHandCards)})
-        rootService.gameService.endTurn()
+        //rootService.gameService.endTurn()
     }
 
     /**

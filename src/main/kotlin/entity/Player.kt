@@ -7,6 +7,7 @@ package entity
  * @property handCards player's hand cards
  * @property score player's score
  * @property lastAction the last played action in the current turn
+ * @property secondActionCombi makes it possible to play different combis as one turn
  */
 
 data class Player(val name : String)
@@ -15,4 +16,5 @@ data class Player(val name : String)
     val handCards : MutableList<Card> = mutableListOf()
     var score : Int = 0
     var lastAction : Action = Action.NULL
+    var secondActionCombi : Boolean = false
 }
