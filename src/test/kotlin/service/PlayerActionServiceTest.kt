@@ -48,6 +48,10 @@ class PlayerActionServiceTest {
     @BeforeTest
     fun setUp() {
         rootService = RootService()
+        assertFailsWith(IllegalStateException::class, "Player1's name is empty")
+        {rootService.gameService.startGame("Max", "")}
+        assertFailsWith(IllegalStateException::class, "Player2's name is empty")
+        {rootService.gameService.startGame("", "Moritz")}
         rootService.gameService.startGame("Max", "Moritz")
     }
 
@@ -60,11 +64,6 @@ class PlayerActionServiceTest {
 
     @Test
     fun testStartGame(){
-        assertFailsWith(IllegalStateException::class, "Player1's name is empty")
-        {rootService.gameService.startGame("Max", "")}
-        assertFailsWith(IllegalStateException::class, "Player2's name is empty")
-        {rootService.gameService.startGame("", "Moritz")}
-
         assertFailsWith(IllegalStateException::class, "Game is already running")
         {rootService.gameService.startGame("Moritz", "Moritz")}
     }
@@ -83,10 +82,13 @@ class PlayerActionServiceTest {
         assertEquals(3, currentGame.tradeDeck.size)
         assertEquals(Action.SWAP, curPlayer.lastAction)
 
-        //currentGame.currentPlayer = 0
         assertFailsWith(IllegalStateException::class, "You can only swap once a turn")
         { rootService.playerActionService.swapCards(2,1)}
 
+        rootService.playerActionService.drawCard()
+        assertEquals(1, currentGame.currentPlayer)
+
+        currentGame.currentPlayer = 0
         curPlayer.lastAction = Action.NULL
 
         // the cards were actually traded
@@ -100,7 +102,6 @@ class PlayerActionServiceTest {
         curPlayer.handCards.clear()
         assertFailsWith(IllegalStateException::class, "Your card has to be part of your hand cards")
         { rootService.playerActionService.swapCards(3,4) }
-        //assertFails{rootService.playerActionService.swapCards(2,1)}
     }
 
     /**
@@ -181,6 +182,9 @@ class PlayerActionServiceTest {
 
         assertFailsWith(IllegalStateException::class, "You can only play another combi or pass")
         {rootService.playerActionService.drawCard()}
+        assertFailsWith(IllegalStateException::class, "You can only play another combi or pass")
+        {rootService.playerActionService.swapCards(1,1)}
+
 
         // test for sequence
         curPlayer.handCards.addAll(cardsForSequence1)
