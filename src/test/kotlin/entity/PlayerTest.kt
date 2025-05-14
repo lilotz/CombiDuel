@@ -3,23 +3,20 @@ import kotlin.test.*
 
 /**
  * Tests for [Player]
+ *
+ * @param testPlayer [Player] with the name "Max" who will be used for the tests
  */
+
 class PlayerTest {
+    val testPlayer = Player("Max")
+
     /**
-     * example player "Max" is used for the tests
+     * checks if the [Player.score] are initialized correctly
      */
-        val testPlayer = Player("Max")
 
     @Test
     fun testPlayer() {
         testPlayer.score += 51
-
-        /**
-         * checks if the [Player.score] are initialized correctly
-         */
-       // Test, ob die Punkteanzahl richtig initialisiert wurde
         assertEquals(51, testPlayer.score)
-
     }
-
 }

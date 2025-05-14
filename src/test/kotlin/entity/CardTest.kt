@@ -5,6 +5,7 @@ import kotlin.test.*
 /**
  * tests for [Card]
  */
+
 class CardTest {
 
     // Beispielkarten, um die Ausgabe der Karten zu testen
