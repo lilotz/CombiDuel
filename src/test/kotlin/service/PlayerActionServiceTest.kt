@@ -41,18 +41,43 @@ class PlayerActionServiceTest {
         Card(CardSuit.CLUBS, CardValue.TWO),
         Card(CardSuit.CLUBS, CardValue.TEN))
 
+    private val cardsForSequence3 = mutableListOf(
+        Card(CardSuit.CLUBS, CardValue.THREE),
+        Card(CardSuit.CLUBS, CardValue.FOUR),
+        Card(CardSuit.CLUBS, CardValue.FIVE),
+        Card(CardSuit.CLUBS, CardValue.TWO),
+        Card(CardSuit.CLUBS, CardValue.ACE))
+
+    private val cardsForSequence4 = mutableListOf(
+        Card(CardSuit.CLUBS, CardValue.THREE),
+        Card(CardSuit.CLUBS, CardValue.KING),
+        Card(CardSuit.CLUBS, CardValue.FOUR),
+        Card(CardSuit.CLUBS, CardValue.TWO),
+        Card(CardSuit.CLUBS, CardValue.ACE))
+
     /**
-     * set up a game with two test players: Max and Moritz
+     * sets up a game with two test players: Max and Moritz
      */
 
     @BeforeTest
     fun setUp() {
         rootService = RootService()
-        assertFailsWith(IllegalStateException::class, "Player1's name is empty")
+        assertFailsWith(IllegalArgumentException::class, "Player1's name is empty")
         {rootService.gameService.startGame("Max", "")}
-        assertFailsWith(IllegalStateException::class, "Player2's name is empty")
+        assertFailsWith(IllegalArgumentException::class, "Player2's name is empty")
         {rootService.gameService.startGame("", "Moritz")}
         rootService.gameService.startGame("Max", "Moritz")
+    }
+
+    /**
+     * tests startGame if all players have a name and if no game will be initialized
+     * if a game is already running
+     */
+
+    @Test
+    fun testStartGame(){
+        assertFailsWith(IllegalArgumentException::class, "Game is already running")
+        {rootService.gameService.startGame("Moritz", "Moritz")}
     }
 
     /**
@@ -61,12 +86,6 @@ class PlayerActionServiceTest {
      *
      * @throws IllegalStateException if no game is active
      */
-
-    @Test
-    fun testStartGame(){
-        assertFailsWith(IllegalStateException::class, "Game is already running")
-        {rootService.gameService.startGame("Moritz", "Moritz")}
-    }
 
     @Test
     fun testSwapCards(){
@@ -197,6 +216,21 @@ class PlayerActionServiceTest {
 
         assertFailsWith(IllegalArgumentException::class, "The cards you've chosen were not a valid combi" )
         { rootService.playerActionService.playCombi(mutableListOf(0,1,3,4))}
+
+        curPlayer.handCards.clear()
+        curPlayer.handCards.addAll(cardsForSequence3)
+
+        rootService.playerActionService.playCombi(mutableListOf(0,1,2,3,4))
+
+        assertEquals(25+8+10, curPlayer.score)
+        assertEquals(0, curPlayer.handCards.size)
+
+        curPlayer.handCards.addAll(cardsForSequence4)
+
+        rootService.playerActionService.playCombi(mutableListOf(0,1,2,3,4))
+
+        assertEquals(25+8+10+10, curPlayer.score)
+        assertEquals(0, curPlayer.handCards.size)
 
         rootService.playerActionService.pass()
     }

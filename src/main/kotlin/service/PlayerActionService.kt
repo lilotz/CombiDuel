@@ -33,10 +33,10 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         val curPlayer = game.players[game.currentPlayer]
         check(curPlayer.lastAction != Action.SWAP)
         { "You can only swap once a turn" }
-        check(curPlayer.lastAction != Action.SWAP && curPlayer.secondActionCombi == false)
+        check(!curPlayer.secondActionCombi)
         { "You can only play another combi or pass" }
-        check(handCard <= curPlayer.handCards.size) { "Your card has to be part of your hand cards" }
-        check(tradeCard <= game.tradeDeck.size) { "The trade card has to be in the trade area" }
+        check(handCard < curPlayer.handCards.size) { "Your card has to be part of your hand cards" }
+        check(tradeCard < game.tradeDeck.size) { "The trade card has to be in the trade area" }
 
         // change the hand card with the trade card
         val tempHandCard = curPlayer.handCards[handCard]
@@ -51,7 +51,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
             rootService.gameService.endTurn()
         }
         curPlayer.lastAction = Action.SWAP
-        onAllRefreshables({refreshAfterSwapCard(curPlayer,tempHandCard, tempTradeCard)})
+        onAllRefreshables{refreshAfterSwapCard(curPlayer,tempHandCard, tempTradeCard)}
     }
 
     /**
@@ -74,7 +74,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         val curPlayer = game.players[game.currentPlayer]
         check(curPlayer.lastAction != Action.DRAW)
         { "You can only draw a card once a turn" }
-        check(curPlayer.lastAction != Action.DRAW && curPlayer.secondActionCombi == false)
+        check(!curPlayer.secondActionCombi)
         { "You can only can only play another combi or pass" }
         check(game.drawStack.isNotEmpty()) { "Draw stack is empty, no card can be drawn" }
         check(curPlayer.handCards.size < 10) {"You can't have more than 10 hand cards" }
@@ -97,9 +97,9 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
      *  ([Player.score] += 2*number of cards)
      *
      *  The combis are evaluated in the respective functions:
-     *  - [playTriple]
-     *  - [playQuadruple]
-     *  - [playSequence]
+     *  - [checkTriple]
+     *  - [checkQuadruple]
+     *  - [checkSequence]
      *
      *  Conditions:
      * - a game has to be active
@@ -125,11 +125,11 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         for(i in combi.indices){ chosenHandCards.add(curPlayer.handCards[combi[i]]) }
 
         // triple
-        if (combi.size == 3) {playTriple(combi)}
+        if (combi.size == 3) {checkTriple(combi)}
         // quadruple
-        else if (combi.size == 4) {playQuadruple(combi)}
+        else if (combi.size == 4) {checkQuadruple(combi)}
         // sequence
-        if (combi.isNotEmpty()) {playSequence(combi)}
+        if (combi.isNotEmpty()) {checkSequence(combi)}
         // since we empty combi after receiving a valid combi if everything does not apply,
         // it was not a valid combi
         if(curPlayer.score == oldScore)
@@ -144,12 +144,11 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         }
 
         curPlayer.lastAction = Action.COMBI
-        onAllRefreshables({refreshAfterEvaluatingCombi(curPlayer,chosenHandCards)})
-        //rootService.gameService.endTurn()
+        onAllRefreshables{refreshAfterEvaluatingCombi(curPlayer,chosenHandCards)}
     }
 
     /**
-     * PlayTriple evaluates if the played combi is a triple
+     * CheckTriple evaluates if the played combi is a triple
      *
      * A triple is three cards of the same [CardValue] and brings the player 10 points which will be added
      * to the [Player.score]
@@ -165,7 +164,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
      * @param combi a list of the chosen cards
      */
 
-    private fun playTriple(combi : MutableList<Int>){
+    private fun checkTriple(combi : MutableList<Int>){
         val game = rootService.currentGame
         checkNotNull(game)
         combi.sortByDescending { it  }
@@ -184,7 +183,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
     }
 
     /**
-     * PlayQuadruple evaluates if the played combi is a quadruple
+     * CheckQuadruple evaluates if the played combi is a quadruple
      *
      * A quadruple is four cards of the same [CardValue] and brings the player 15 points which will be added
      * to the [Player.score]
@@ -200,7 +199,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
      * @param combi a list of the chosen cards
      */
 
-    private fun playQuadruple(combi : MutableList<Int>){
+    private fun checkQuadruple(combi : MutableList<Int>){
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
@@ -219,7 +218,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
     }
 
     /**
-     * PlaySequence evaluates if the played combi is a sequence
+     * CheckSequence evaluates if the played combi is a sequence
      *
      * A sequence is at least three and at max ten cards of the same [CardSuit] and must be in a direct order
      *
@@ -236,22 +235,23 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
      * @param combi a list of the chosen cards
      */
 
-    private fun playSequence(combi : MutableList<Int>){
+    private fun checkSequence(combi : MutableList<Int>){
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
         // combi has to be sorted by values, so it can't be evaluated better
         val chosenHandCards = mutableListOf<Card>()
         for(i in combi.indices){ chosenHandCards.add(curPlayer.handCards[combi[i]]) }
-        val chosenHandCardsSorted = chosenHandCards.sortedBy{it.value.ordinal}
+        val chosenHandCardsMap = chosenHandCards.map{(it.value.ordinal+combi.size)%13}
+        val chosenHandCardsSorted = chosenHandCardsMap.sortedWith(compareBy{ it })
+        val size = chosenHandCardsSorted.size
+        for (i in 0..size - 2) {
+            if (chosenHandCards[i].suit != chosenHandCards[i + 1].suit) {return}
+                // if the next card is not exactly one value bigger than the other
+                if ((chosenHandCardsSorted[i + 1]-chosenHandCardsSorted[i]) != 1) {return}
+            }
 
-        for(i in 0..chosenHandCardsSorted.size-2) {
-            if(chosenHandCardsSorted[i].suit != chosenHandCardsSorted[i+1].suit)
-            {return}
-            // if the next card is not exactly one value bigger than the other
-            if((chosenHandCardsSorted[i+1].value.compareTo(chosenHandCardsSorted[i].value))!=1)
-            {return}
-        }
+        combi.sortByDescending { it }
         for(i in combi.indices){
             curPlayer.disposalArea.add(curPlayer.handCards[combi[i]])
             curPlayer.handCards.removeAt(combi[i])

@@ -12,7 +12,7 @@ import entity.*
  *
  * @see AbstractRefreshingService
  */
-interface Refreshable
+interface Refreshable{
 
 /**
  * issues the necessary refreshes after starting a new game
@@ -66,3 +66,4 @@ fun refreshAfterChangePlayer() {}
  */
 
 fun refreshAfterGameEnds() {}
+}

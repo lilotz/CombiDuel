@@ -18,34 +18,29 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
      * @param player1Name name of player 1
      * @param player2Name name of player 2
      *
-     * @throws IllegalStateException if a game is already running or if a string
-     * with the [Player]'s name is empty
+     * @throws IllegalArgumentException if f a game is already running
+     * or if a string with the [Player]'s name is empty
      */
 
     fun startGame(player1Name : String, player2Name : String) {
-        if (rootService.currentGame != null) {
-            throw IllegalStateException("Game is already running")
-        }
-        if (player1Name == ""){
-            throw IllegalStateException("Player1's name is empty")
-        }
-        if (player2Name == ""){
-            throw IllegalStateException("Player2's name is empty")
-        }
+        require(rootService.currentGame == null) {"Game is already running"}
+        require(player1Name != ""){"Player1's name is empty"}
+        require(player2Name != ""){"Player2's name is empty"}
+
         val players = listOf(Player(player1Name),Player(player2Name))
         val game = CombiDuel(players)
 
         rootService.currentGame = game
 
        val allCards = defaultRandomCardList()
-        while(players[1].handCards.size <7){
+        repeat(7) {
             players[0].handCards.add(allCards.first())
             allCards.removeAt(0)
             players[1].handCards.add(allCards.first())
             allCards.removeAt(0)
         }
 
-        while (game.tradeDeck.size < 3) {
+        repeat(3){
             game.tradeDeck.add(allCards.first())
             allCards.removeAt(0)
         }
@@ -59,9 +54,15 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
     /**
      * EndGame is called after the games finishes which means after one player's hand cards are empty
      * or the two players passed as their only action after each other
+     * @throws IllegalStateException if no game is active
+     * @throws IllegalArgumentException if endGame has been incorrectly called
      */
 
     fun endGame(){
+        val game = rootService.currentGame
+        checkNotNull(game)
+        require(game.players[game.currentPlayer].handCards.isEmpty() || game.passCheck)
+        {"The conditions for ending the games are not met" }
         onAllRefreshables { refreshAfterGameEnds() }
     }
 
@@ -80,6 +81,7 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
         checkNotNull(game)
         val oldCurrentPlayer = game.currentPlayer
         game.players[oldCurrentPlayer].lastAction = Action.NULL
+        game.players[oldCurrentPlayer].secondActionCombi = false
         game.currentPlayer = (oldCurrentPlayer+1)%game.players.size
 
         onAllRefreshables { refreshAfterChangePlayer() }
