@@ -12,4 +12,13 @@ class RootService {
     val playerActionService = PlayerActionService(this)
 
     var currentGame : CombiDuel? = null
+
+    fun addRefreshable(newRefreshable: Refreshable) {
+        gameService.addRefreshable(newRefreshable)
+        playerActionService.addRefreshable(newRefreshable)
+    }
+
+    fun addRefreshables(vararg newRefreshables: Refreshable) {
+        newRefreshables.forEach { addRefreshable(it) }
+    }
 }

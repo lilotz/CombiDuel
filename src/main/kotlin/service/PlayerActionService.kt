@@ -47,11 +47,13 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
 
         // if the last action isn't NULL, the SWAP is the 2nd one and since one can play only 2 actions
         // in a turn, the turn of the player automatically ends
+        onAllRefreshables{refreshAfterSwapCard(curPlayer,tempHandCard, tempTradeCard)}
+
         if(curPlayer.lastAction != Action.NULL){
             rootService.gameService.endTurn()
         }
-        curPlayer.lastAction = Action.SWAP
-        onAllRefreshables{refreshAfterSwapCard(curPlayer,tempHandCard, tempTradeCard)}
+        else{ curPlayer.lastAction = Action.SWAP }
+
     }
 
     /**
@@ -79,15 +81,16 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         check(game.drawStack.isNotEmpty()) { "Draw stack is empty, no card can be drawn" }
         check(curPlayer.handCards.size < 10) {"You can't have more than 10 hand cards" }
 
-        curPlayer.handCards.add(game.drawStack.removeFirst())
+        val drawnCard = game.drawStack.removeFirst()
+        curPlayer.handCards.add(drawnCard)
 
         // if the last action isn't NULL, the DRAW is the 2nd one and since one can play only 2 actions
         // in a turn, the turn of the player automatically ends
+        onAllRefreshables { refreshAfterDrawCard(curPlayer, drawnCard) }
         if(curPlayer.lastAction != Action.NULL){
             rootService.gameService.endTurn()
         }
-        curPlayer.lastAction = Action.DRAW
-        onAllRefreshables { refreshAfterDrawCard(curPlayer) }
+        else{ curPlayer.lastAction = Action.DRAW }
     }
 
     /**
@@ -135,16 +138,16 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         if(curPlayer.score == oldScore)
         {throw IllegalArgumentException("The cards you've chosen were not a valid combi")}
 
+        if (curPlayer.lastAction != Action.NULL && curPlayer.lastAction != Action.COMBI){
+            curPlayer.secondActionCombi = true
+        }
+        else{curPlayer.lastAction = Action.COMBI}
+
+        onAllRefreshables{refreshAfterEvaluatingCombi(curPlayer,chosenHandCards)}
         // if no hand cards are left, the game ends automatically
         if(curPlayer.handCards.isEmpty()) {rootService.gameService.endGame()}
         // since the player can play combis as often as they want to, it needs to be distinguished between
         // playCombi is the first action or the second
-        else if (curPlayer.lastAction != Action.NULL || curPlayer.lastAction != Action.COMBI){
-            curPlayer.secondActionCombi = true
-        }
-
-        curPlayer.lastAction = Action.COMBI
-        onAllRefreshables{refreshAfterEvaluatingCombi(curPlayer,chosenHandCards)}
     }
 
     /**
@@ -279,12 +282,19 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
 
-        if (game.passCheck) {rootService.gameService.endGame()}
+        if (game.passCheck) {
+            if (curPlayer.lastAction == Action.NULL) {
+                rootService.gameService.endGame()}
+            else {
+                game.passCheck = false
+                curPlayer.lastAction = Action.PASS
+                rootService.gameService.endTurn()
+            }
+        }
         else {
-            if (curPlayer.lastAction == Action.NULL) {game.passCheck = true}
-            else {game.passCheck = false}
+            game.passCheck = curPlayer.lastAction == Action.NULL
 
-            onAllRefreshables { refreshAfterPass(curPlayer) }
+            //onAllRefreshables { refreshAfterPass(curPlayer) }
             curPlayer.lastAction = Action.PASS
             rootService.gameService.endTurn()
         }

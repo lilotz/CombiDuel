@@ -1,4 +1,4 @@
-package gui
+/*package gui
 
 import tools.aqua.bgw.core.BoardGameApplication
 import service.RootService
@@ -28,3 +28,5 @@ class SopraApplication : BoardGameApplication("SoPra Game") {
 
 }
 
+
+ */

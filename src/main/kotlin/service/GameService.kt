@@ -48,7 +48,10 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
 
         game.drawStack.addAll(allCards)
 
+        game.currentPlayer = (0..1).random()
+
         onAllRefreshables { refreshAfterStartNewGame() }
+        endTurn()
     }
 
     /**

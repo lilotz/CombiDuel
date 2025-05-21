@@ -76,8 +76,8 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
         posX = 860,
         posY = 950,
         width = 200,
-        height = 600,
-        text = "",
+        height = 60,
+        text = "Start New Game",
         font = Font(
             size = 56,
             color = Color(255, 255, 255),

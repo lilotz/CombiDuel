@@ -17,8 +17,7 @@ private const val IMG_WIDTH = 130
 
 /**
  * Provides access to the src/main/resources/card_deck.png file that contains all card images
- * in a raster. The returned [ImageVisual] objects of [frontImageFor], [blankImage],
- * and [backImage] are 130x200 pixels.
+ * in a raster. The returned [ImageVisual] objects of [frontImageFor] and [blankImage] are 130x200 pixels.
  */
 class CardImageLoader {
 
@@ -30,7 +29,7 @@ class CardImageLoader {
     /**
      * Provides the back side image of the card deck
      */
-    val backImage: ImageVisual get() = getImageByCoordinates(2, 4)
+
 
     /**
      * Provides the card image for the given [CardSuit] and [CardValue]

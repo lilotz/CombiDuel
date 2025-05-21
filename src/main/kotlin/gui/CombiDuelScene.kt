@@ -430,6 +430,7 @@ class CombiDuelScene(private val rootService: RootService) :
         changePlane2.isVisible = true
         changePlane1.isVisible = true
         changeButton.isVisible = true
+        passButton.isVisible = false
 
         changePlane1.text = "It is now ${curPlayer.name}'s turn!"
 

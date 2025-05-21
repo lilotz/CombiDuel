@@ -1,4 +1,4 @@
-package gui
+/*package gui
 
 import service.Refreshable
 import service.RootService
@@ -34,3 +34,5 @@ class HelloScene : BoardGameScene(), Refreshable {
     }
 
 }
+
+ */

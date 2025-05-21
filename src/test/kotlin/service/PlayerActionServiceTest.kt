@@ -134,7 +134,7 @@ class PlayerActionServiceTest {
     fun testDrawCard(){
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-        val curPlayer =  currentGame.players[currentGame.currentPlayer]
+        var curPlayer =  currentGame.players[currentGame.currentPlayer]
         rootService.playerActionService.swapCards(1,1)
         rootService.playerActionService.drawCard()
 
@@ -142,16 +142,11 @@ class PlayerActionServiceTest {
         assertEquals(8, curPlayer.handCards.size)
         // the draw stack should be one smaller than the initial 35
         assertEquals(34, currentGame.drawStack.size)
-        assertEquals(Action.DRAW, curPlayer.lastAction)
-        assertEquals(1, currentGame.currentPlayer)
 
-        currentGame.currentPlayer = 0
-        assertFailsWith(IllegalStateException::class, "You can only draw a card once a turn")
-        { rootService.playerActionService.drawCard()}
-
-        curPlayer.lastAction = Action.NULL
+        curPlayer =  currentGame.players[currentGame.currentPlayer]
 
         // fill the player's hand cards up to 10 cards, so drawCard() should fail
+        curPlayer.handCards.add(currentGame.drawStack.removeFirst())
         curPlayer.handCards.add(currentGame.drawStack.removeFirst())
         curPlayer.handCards.add(currentGame.drawStack.removeFirst())
         assertEquals(10, curPlayer.handCards.size)
@@ -174,7 +169,7 @@ class PlayerActionServiceTest {
     fun testPlayCombi(){
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-        val curPlayer =  currentGame.players[currentGame.currentPlayer]
+        var curPlayer =  currentGame.players[currentGame.currentPlayer]
 
         // test for triple
         curPlayer.handCards.clear()
@@ -185,16 +180,20 @@ class PlayerActionServiceTest {
         assertEquals(0, curPlayer.handCards.size)
         assertEquals(Action.COMBI, curPlayer.lastAction)
 
+        rootService.playerActionService.drawCard()
+
         //test for quadruple
+        curPlayer =  currentGame.players[currentGame.currentPlayer]
+        curPlayer.handCards.clear()
         curPlayer.handCards.addAll(cardsForQuadruple)
         curPlayer.lastAction = Action.NULL
         curPlayer.secondActionCombi = false
         rootService.playerActionService.drawCard()
         rootService.playerActionService.playCombi(mutableListOf(0,2,4,5))
 
-        assertEquals(10+15, curPlayer.score)
+        assertEquals(15, curPlayer.score)
         assertEquals(3, curPlayer.handCards.size)
-        assertEquals(Action.COMBI, curPlayer.lastAction)
+        assertEquals(Action.DRAW, curPlayer.lastAction)
         assertTrue { curPlayer.handCards.contains(Card(CardSuit.CLUBS, CardValue.TEN)) }
         assertTrue { curPlayer.handCards.contains(Card(CardSuit.CLUBS, CardValue.TWO)) }
         assertTrue(curPlayer.secondActionCombi)
@@ -209,7 +208,7 @@ class PlayerActionServiceTest {
         curPlayer.handCards.addAll(cardsForSequence1)
         rootService.playerActionService.playCombi(mutableListOf(0,3,4,5))
 
-        assertEquals(25+8, curPlayer.score)
+        assertEquals(15+8, curPlayer.score)
         assertEquals(2, curPlayer.handCards.size)
 
        curPlayer.handCards.addAll(cardsForSequence2)
@@ -222,14 +221,14 @@ class PlayerActionServiceTest {
 
         rootService.playerActionService.playCombi(mutableListOf(0,1,2,3,4))
 
-        assertEquals(25+8+10, curPlayer.score)
+        assertEquals(15+8+10, curPlayer.score)
         assertEquals(0, curPlayer.handCards.size)
 
         curPlayer.handCards.addAll(cardsForSequence4)
 
         rootService.playerActionService.playCombi(mutableListOf(0,1,2,3,4))
 
-        assertEquals(25+8+10+10, curPlayer.score)
+        assertEquals(15+8+10+10, curPlayer.score)
         assertEquals(0, curPlayer.handCards.size)
 
         rootService.playerActionService.pass()
@@ -243,15 +242,17 @@ class PlayerActionServiceTest {
     fun testPass(){
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-        val curPlayer =  currentGame.players[currentGame.currentPlayer]
+        var curPlayer =  currentGame.players[0]
 
         curPlayer.lastAction = Action.DRAW
         rootService.playerActionService.pass()
         assertFalse(currentGame.passCheck)
         assertEquals(1, currentGame.currentPlayer)
 
+        curPlayer = currentGame.players[currentGame.currentPlayer]
         curPlayer.lastAction = Action.NULL
         rootService.playerActionService.pass()
         assertTrue(currentGame.passCheck)
+        assertEquals(0, currentGame.currentPlayer)
     }
 }
