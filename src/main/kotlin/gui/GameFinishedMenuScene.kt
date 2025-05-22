@@ -4,8 +4,10 @@ import tools.aqua.bgw.core.*
 import service.Refreshable
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.*
+import tools.aqua.bgw.style.*
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
+import tools.aqua.bgw.visual.CompoundVisual
 
 /**
  * GameFinishedMenuScene declares the winner after a game was finished.
@@ -24,15 +26,10 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
         width = 1000,
         height = 250,
         text = "Congratulations!",
-        font = Font(
-            size = 56,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL,
-        ),
+        font =  Font(56, Color(255,255,255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
-        visual = ColorVisual(82, 95, 61)
+        visual = CompoundVisual(ColorVisual(82, 95, 61).apply{
+            style.borderRadius = BorderRadius(10) })
     )
 
     // label that displays the name of the winner
@@ -42,15 +39,10 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
         width = 1000,
         height = 250,
         text = "",
-        font = Font(
-            size = 56,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL,
-        ),
+        font =  Font(56, Color(255,255,255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
-        visual = ColorVisual(82, 95, 61)
+        visual = CompoundVisual(ColorVisual(82, 95, 61).apply{
+            style.borderRadius = BorderRadius(10) })
     )
 
     // label that displays the score of the winner
@@ -60,15 +52,10 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
         width = 1000,
         height = 250,
         text = "",
-        font = Font(
-            size = 56,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL,
-        ),
+        font = Font(56, Color(255,255,255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
-        visual = ColorVisual(82, 95, 61)
+        visual = CompoundVisual(ColorVisual(82, 95, 61).apply{
+            style.borderRadius = BorderRadius(10) })
     )
 
     // button that when clicked starts a new game
@@ -78,15 +65,10 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
         width = 200,
         height = 60,
         text = "Start New Game",
-        font = Font(
-            size = 56,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL,
-        ),
+        font = Font(56, Color(255, 255, 255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
-        visual = ColorVisual(82, 95, 61)
+        visual = CompoundVisual(ColorVisual(82, 95, 61).apply{
+            style.borderRadius = BorderRadius(10) })
     ).apply {
         onMouseClicked = { rootService.gameService.onAllRefreshables { refreshAfterRestart() } }
     }
@@ -96,20 +78,13 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
         width = 35, height = 35,
         posX = 1885, posY = 0,
         text = "X",
-        font = Font(
-            size = 18,
-            color = Color(256, 256, 256),
-            family = "Arial",
-            fontWeight = Font.FontWeight.EXTRA_BOLD,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
+        font = Font(18, Color(255,255,255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
         isWrapText = false,
-        visual = ColorVisual(164, 18, 2)
+        visual = CompoundVisual(ColorVisual(164, 18, 2).apply{
+            style.borderRadius = BorderRadius(10) })
     ).apply {
-        onMouseClicked = {
-            CombiDuelApplication.exit()
-        }
+        onMouseClicked = { CombiDuelApplication.exit() }
     }
 
     // Initialize the scene by setting the background color and adding all components to the content pane

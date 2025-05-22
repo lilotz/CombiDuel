@@ -3,6 +3,7 @@ package gui
 import tools.aqua.bgw.core.*
 import service.Refreshable
 import service.RootService
+import tools.aqua.bgw.util.Font
 
 /**
  * Main class of the Combi Duel Application
@@ -19,6 +20,8 @@ object CombiDuelApplication : BoardGameApplication("CombiDuel"), Refreshable {
     private val newGameMenuScene = NewGameMenuScene(rootService)
 
     init {
+        loadFont("IBMPlexSerif-Medium.ttf", "IBMPlex Serif Medium", Font.FontWeight.MEDIUM)
+
         rootService.addRefreshables(this,
             gameScene,
             gameFinishedMenuScene,

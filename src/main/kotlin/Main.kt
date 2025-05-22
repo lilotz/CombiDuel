@@ -7,5 +7,5 @@ import gui.CombiDuelApplication
  */
 fun main() {
     CombiDuelApplication.show()
-    println("Application ended. Goodbye")
+    println("Application ended. We hope you had fun. Goodbye")
 }

@@ -4,12 +4,12 @@ import tools.aqua.bgw.core.*
 import service.Refreshable
 import service.RootService
 import entity.*
-import tools.aqua.bgw.animation.MovementAnimation
 import tools.aqua.bgw.components.container.*
 import tools.aqua.bgw.components.gamecomponentviews.CardView
 import tools.aqua.bgw.util.*
 import tools.aqua.bgw.visual.*
 import tools.aqua.bgw.components.uicomponents.*
+import tools.aqua.bgw.style.*
 
 /**
  * CombiDuelScene is the main scene where the game is being played.
@@ -21,33 +21,28 @@ import tools.aqua.bgw.components.uicomponents.*
  */
 
 class CombiDuelScene(private val rootService: RootService) :
-    BoardGameScene(1920, 1080, background = ColorVisual(Color(132, 153,99))),
+    BoardGameScene(1920, 1080, background = ColorVisual(Color(132, 153, 99))),
     Refreshable {
 
     //TODO: Fehlermeldungen mit try {} catch {}; ActionsLeft-Button
 
     private val cards: BidirectionalMap<Card, CardView> = BidirectionalMap()
 
-    private val cardImageLoader : CardImageLoader = CardImageLoader()
+    private val cardImageLoader: CardImageLoader = CardImageLoader()
 
-    private var indexSelectedTradeCard : MutableList<Int> = mutableListOf()
+    private val indexSelectedTradeCard: MutableList<Int> = mutableListOf()
 
-    private var indexSelectedHandCards : MutableList<Int> = mutableListOf()
+    private val indexSelectedHandCards: MutableList<Int> = mutableListOf()
 
     // LinearLayout that contains of the player's hand cards
     private val playerHand = LinearLayout<CardView>(
-        posX = 100,
+        posX = 0,
         posY = 780,
-        width = 1620,
-        height = 250,
-        alignment = Alignment.BOTTOM_CENTER,
+        width = 1920,
+        height = 200,
+        alignment = Alignment.CENTER,
         spacing = -60,
-    ).apply{
-        onMouseClicked={
-            if(indexSelectedHandCards.size == 1 && indexSelectedTradeCard.size == 1){
-                rootService.playerActionService.swapCards(indexSelectedHandCards[0], indexSelectedTradeCard[0])}
-            }
-        }
+    )
 
     // label with the player's name and their score
     private val playerName = Label(
@@ -57,20 +52,22 @@ class CombiDuelScene(private val rootService: RootService) :
         height = 50,
         text = "Spieler",
         alignment = Alignment.CENTER,
-        visual = ColorVisual(Color(82, 95, 61)),
-        font = Font(22, Color(0xFFFFFFF), "JetBrains Mono ExtraBold")
+        visual = CompoundVisual(ColorVisual(Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        }),
+        font = Font(22, Color(0xFFFFFFF), "IBMPlex Serif Medium")
     )
 
     // LinearLayout that contains of the opponent's hand cards which are hidden
     private val opponentHand = LinearLayout<CardView>(
         posX = 0,
-        posY = 75,
+        posY = 45,
         width = 1920,
-        height = 200,
+        height = 250,
         alignment = Alignment.TOP_CENTER,
         spacing = -60,
 
-    ).apply {
+        ).apply {
         rotation = 180.0
     }
 
@@ -82,8 +79,10 @@ class CombiDuelScene(private val rootService: RootService) :
         height = 50,
         text = "Spieler",
         alignment = Alignment.CENTER,
-        visual = ColorVisual(Color(82, 95, 61)),
-        font = Font(22, Color(0xFFFFFFF), "JetBrains Mono ExtraBold")
+        visual = CompoundVisual(ColorVisual(Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        }),
+        font = Font(22, Color(0xFFFFFFF), "IBMPlex Serif Medium")
     ).apply {
         rotation = 0.0
     }
@@ -94,84 +93,116 @@ class CombiDuelScene(private val rootService: RootService) :
         posY = 415,
         width = 162,
         height = 250,
-        front = ImageVisual("card_back.jpg")
-    ).apply{
-        onMouseClicked = {
-            rootService.playerActionService.drawCard()
+        front = CompoundVisual(ImageVisual("card_back.png").apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
+        try {
+            onMouseClicked = {
+                rootService.playerActionService.drawCard()
+            }
+        } catch (exception: IllegalStateException) {
+            errorWasThrown(exception)
         }
     }
 
     // LinearLayout with three cards that can be traded
     private val tradeArea = LinearLayout<CardView>(
         posX = 700,
-        posY = 415,
+        posY = 440,
         width = 520,
-        height = 250,
-        alignment = Alignment.BOTTOM_CENTER,
+        height = 200,
+        alignment = Alignment.CENTER,
         spacing = 30
-    ).apply{
-        onMouseClicked ={
-        if(indexSelectedHandCards.size == 1 && indexSelectedTradeCard.size == 1){
-       rootService.playerActionService.swapCards(indexSelectedHandCards[0], indexSelectedTradeCard[0])}
-       }
-    }
+    )
 
     // This CardStack is used to display the top card of the play stack
-    private val discardArea = CardStack<CardView>(
+    private val discardStack = CardStack<CardView>(
         posX = 100,
-        posY = 750,
+        posY = 805,
         width = 162,
-        height = 250,
+        height = 200,
         alignment = Alignment.CENTER
     )
 
-    // label with "Drop Area"
-    private val dropAreaLabel = Label(
-        posX = 50,
-        posY = 700,
-        width = 262,
-        height = 350,
-        text = "DROP \n AREA",
-        font = Font(30, Color(1, 1, 1))
-    )
+    // button with "Play Combi"
+    private val dropAreaLabel = Button(
+        posX = 80,
+        posY = 805,
+        width = 202,
+        height = 100,
+        text = "Play Combi",
+        font = Font(30, Color(255, 255, 255), "IBMPlex Serif Medium"),
+        visual = CompoundVisual(ColorVisual(Color(82, 95, 61, 200)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
+        try {
+            onMouseClicked = {
+                if (indexSelectedHandCards.size > 2 && indexSelectedHandCards.size < 11) {
+                    rootService.playerActionService.playCombi(indexSelectedHandCards)
+                }
+            }
+        } catch (exception: IllegalStateException) {
+            errorWasThrown(exception)
+        }
+    }
 
     // area to where the chosen cards which should form a combi can be delivered
     private val dropArea = Area<CardView>(
         posX = 50,
-        posY = 700,
+        posY = 680,
         width = 262,
         height = 350,
-        visual = ColorVisual(
-            color = Color(103, 119, 77, 180)
-        )
+        visual = CompoundVisual(
+            ColorVisual(color = Color(103, 119, 77, 180))
+                .apply { style.borderRadius = BorderRadius(10) })
+    )
+
+    // button with which the current player can pass
+    private val passButton = Button(
+        posX = 1690,
+        posY = 870,
+        width = 160,
+        height = 70,
+        text = "Pass",
+        font = Font(30, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        alignment = Alignment.CENTER,
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
     ).apply {
+        isVisible = false
         onMouseClicked = {
-            if(indexSelectedHandCards.size >2 && indexSelectedHandCards.size <11){
-                rootService.playerActionService.playCombi(indexSelectedHandCards)
-            }
+            rootService.playerActionService.pass()
         }
     }
 
     // button with which the current player can pass
-    private val passButton = Button(
-        posX = 1710,
-        posY = 880,
-        width = 120,
-        height = 50,
-        text = "Pass",
-        font = Font(
-            size = 12,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
+    private val tradeButton = Button(
+        posX = 1690,
+        posY = 790,
+        width = 160,
+        height = 70,
+        text = "Trade",
+        font = Font(30, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
-        visual = ColorVisual(color = Color(82, 95, 61))
-    ).apply{
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
         isVisible = false
-        onMouseClicked = {
-            rootService.playerActionService.pass()
+        try {
+            onMouseClicked = {
+                if (indexSelectedHandCards.size == 1 && indexSelectedTradeCard.size == 1) {
+                    rootService.playerActionService.swapCards(
+                        indexSelectedHandCards[0],
+                        indexSelectedTradeCard[0]
+                    )
+                }
+            }
+        } catch (exception: IllegalStateException) {
+            errorWasThrown(exception)
         }
     }
 
@@ -183,17 +214,11 @@ class CombiDuelScene(private val rootService: RootService) :
         height = 100,
         text = "",
         alignment = Alignment.CENTER,
-        font = Font(
-            size = 70,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
-        visual = ColorVisual(
-            color = Color(82, 95, 61)
-        )
-    ).apply{
+        font = Font(70, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        visual = CompoundVisual(
+            ColorVisual(color = Color(82, 95, 61))
+                .apply { style.borderRadius = BorderRadius(10) })
+    ).apply {
         isVisible = false
     }
 
@@ -205,10 +230,10 @@ class CombiDuelScene(private val rootService: RootService) :
         width = 1520,
         height = 680,
         alignment = Alignment.CENTER,
-        visual = ColorVisual(
-            color = Color(103, 119, 77, 180)
-        )
-    ).apply{
+        visual = CompoundVisual(
+            ColorVisual(color = Color(103, 119, 77, 180))
+                .apply { style.borderRadius = BorderRadius(10) })
+    ).apply {
         isVisible = false
     }
 
@@ -219,17 +244,60 @@ class CombiDuelScene(private val rootService: RootService) :
         width = 120,
         height = 45,
         text = "Okay",
-        font = Font(
-            size = 30,
-            color = Color(255,255,255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
+        font = Font(30, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
-        visual = ColorVisual(color = Color(82, 95, 61))
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
     ).apply {
         isVisible = false
+    }
+
+    private val errorPlane1 = Label(
+        posX = 460,
+        posY = 490,
+        width = 1000,
+        height = 100,
+        text = "",
+        alignment = Alignment.CENTER,
+        font = Font(70, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
+        isVisible = false
+    }
+    private val errorPlane2 = Label(
+        posX = 200,
+        posY = 200,
+        width = 1520,
+        height = 680,
+        alignment = Alignment.CENTER,
+        visual = CompoundVisual(
+            ColorVisual(color = Color(103, 119, 77, 180))
+                .apply { style.borderRadius = BorderRadius(10) })
+    ).apply {
+        isVisible = false
+    }
+
+    private val errorButton = Button(
+        posX = 900,
+        posY = 720,
+        width = 120,
+        height = 45,
+        text = "Okay",
+        font = Font(30, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        alignment = Alignment.CENTER,
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
+        isVisible = false
+        onMouseClicked = {
+            errorPlane1.isVisible = false
+            errorPlane2.isVisible = false
+            isVisible = false
+        }
     }
 
     init {
@@ -241,13 +309,17 @@ class CombiDuelScene(private val rootService: RootService) :
             opponentName,
             drawStack,
             tradeArea,
-            discardArea,
-            dropAreaLabel,
             dropArea,
+            discardStack,
+            dropAreaLabel,
             passButton,
+            tradeButton,
             changePlane2,
             changePlane1,
-            changeButton
+            changeButton,
+            errorPlane1,
+            errorPlane2,
+            errorButton
         )
     }
 
@@ -262,99 +334,66 @@ class CombiDuelScene(private val rootService: RootService) :
         cardView.height = 250.0
         cardView.rotation = 0.0
         cardView.showFront()
-        cardView.isDraggable = true
     }
 
     private fun removeHoverEffect(cardView: CardView) {
         cardView.onMouseEntered = null
         cardView.onMouseExited = null
-        cardView.width = 130.0
-        cardView.height = 200.0
+        cardView.width = 162.0
+        cardView.height = 250.0
         cardView.rotation = 0.0
         cardView.showBack()
-        cardView.isDraggable = false
     }
 
-    private fun makeItClickableTrade(index : Int, cardView: CardView) {
+    private fun makeItClickableTrade(index: Int, cardView: CardView) {
         cardView.onMouseClicked = {
             if (indexSelectedTradeCard.contains(index)) {
                 indexSelectedTradeCard.remove(index)
-                playAnimation(
-                    MovementAnimation(
-                        componentView = cardView,
-                        byX = 0,
-                        byY = 0,
-                        duration = 0
-                    )/*.apply {
-                        onFinished = {
-                            cardView.posY += 50
-                        }
-                    }*/
-                )
+                cardView.posY = 0.0
             } else {
-                cardView.onMouseClicked = {
-                    indexSelectedTradeCard.add(index)
-                    playAnimation(
-                        MovementAnimation(
-                            componentView = cardView,
-                            byX = 0,
-                            byY = -50,
-                            duration = 0
-                        )/*.apply {
-                            onFinished = {
-                                cardView.posY -= 50
-                            }
-                        }*/
-                    )
-                }
+                indexSelectedTradeCard.add(index)
+                cardView.posY -= 50
             }
         }
     }
 
-    private fun makeItClickableHand(index: Int, cardView: CardView){
+    private fun makeItClickableHand(index: Int, cardView: CardView) {
         cardView.onMouseClicked = {
             if (indexSelectedHandCards.contains(index)) {
                 indexSelectedHandCards.remove(index)
-                playAnimation(
-                        MovementAnimation(
-                            componentView = cardView,
-                            byX = 0,
-                            byY = 0,
-                            duration = 0
-                    )/*.apply {
-                        onFinished = {
-                            cardView.posY += 50
-                       }*/
-                )
+                cardView.posY = 0.0
             } else {
                 indexSelectedHandCards.add(index)
-                playAnimation(
-                    MovementAnimation(
-                        componentView = cardView,
-                        byX = 0,
-                        byY = -50,
-                        duration = 0
-                    )/*.apply {
-                        onFinished = {
-                            cardView.posY -= 50
-                        }
-                    }*/
-                )
+                cardView.posY -= 50
             }
         }
     }
 
+    private fun errorWasThrown(exception: Exception) {
+        errorPlane1.isVisible = true
+        errorPlane2.isVisible = true
+        errorButton.isVisible = true
+        errorPlane1.text = exception.toString()
+    }
+
+    /**
+     * is called by the service layer after a new game with two players start
+     */
 
     override fun refreshAfterStartNewGame() {
         //val game = rootService.currentGame ?: return
         cards.clear()
-        CardValue.entries.forEach{ value ->
+        CardValue.entries.forEach { value ->
             CardSuit.entries.forEach { suit ->
                 cards[Card(suit, value)] = CardView(
                     height = 200,
                     width = 130,
-                    front = cardImageLoader.frontImageFor(suit, value),
-                    back = ImageVisual("card_back.jpg")
+                    front = CompoundVisual(cardImageLoader.frontImageFor(suit, value).apply {
+                        style.borderRadius = BorderRadius(10)
+                    }),
+                    back = CompoundVisual(ImageVisual("card_back.png").apply {
+                        style.borderRadius = BorderRadius(10)
+                    })
                 )
             }
         }
@@ -371,12 +410,13 @@ class CombiDuelScene(private val rootService: RootService) :
         curPlayer.handCards.forEachIndexed { index, card ->
             playerHand.add((cards[card]).apply {
                 applyHoverEffect(this)
+                this.posY = 0.0
                 makeItClickableHand(index, this)
             })
         }
 
-        playedCombi.forEach{ card ->
-            discardArea.push(cards[card])
+        playedCombi.forEach { card ->
+            discardStack.push(cards[card])
         }
     }
 
@@ -388,6 +428,7 @@ class CombiDuelScene(private val rootService: RootService) :
         curPlayer.handCards.forEachIndexed { index, card ->
             playerHand.add((cards[card]).apply {
                 applyHoverEffect(this)
+                this.posY = 0.0
                 makeItClickableHand(index, this)
             })
         }
@@ -405,6 +446,7 @@ class CombiDuelScene(private val rootService: RootService) :
         game.tradeDeck.forEachIndexed { index, card ->
             tradeArea.add((cards[card]).apply {
                 applyHoverEffect(this)
+                this.posY = 0.0
                 makeItClickableTrade(index, this)
             })
         }
@@ -412,6 +454,7 @@ class CombiDuelScene(private val rootService: RootService) :
         curPlayer.handCards.forEachIndexed { index, card ->
             playerHand.add((cards[card]).apply {
                 applyHoverEffect(this)
+                this.posY = 0.0
                 makeItClickableHand(index, this)
             })
         }
@@ -431,6 +474,7 @@ class CombiDuelScene(private val rootService: RootService) :
         changePlane1.isVisible = true
         changeButton.isVisible = true
         passButton.isVisible = false
+        tradeButton.isVisible = false
 
         changePlane1.text = "It is now ${curPlayer.name}'s turn!"
 
@@ -441,28 +485,31 @@ class CombiDuelScene(private val rootService: RootService) :
 
         playerHand.clear()
         opponentHand.clear()
-        discardArea.clear()
+        discardStack.clear()
         tradeArea.clear()
 
         game.tradeDeck.forEachIndexed { index, card ->
             tradeArea.add((cards[card]).apply {
                 applyHoverEffect(this)
+                this.posY = 0.0
                 makeItClickableTrade(index, this)
             })
         }
 
         curPlayer.handCards.forEach { card ->
             playerHand.add((cards[card]).apply {
+                this.posY = 0.0
                 removeHoverEffect(this)
             })
         }
 
         curPlayer.disposalArea.forEach { card ->
-            discardArea.push(cards[card])
+            discardStack.push(cards[card])
         }
 
         opponent.handCards.forEach { card ->
             opponentHand.add((cards[card]).apply {
+                this.posY = 0.0
                 removeHoverEffect(this)
             })
         }
@@ -472,11 +519,13 @@ class CombiDuelScene(private val rootService: RootService) :
             changePlane1.isVisible = false
             changeButton.isVisible = false
             passButton.isVisible = true
+            tradeButton.isVisible = true
 
             playerHand.clear()
             curPlayer.handCards.forEachIndexed { index, card ->
                 playerHand.add((cards[card]).apply {
                     applyHoverEffect(this)
+                    this.posY = 0.0
                     makeItClickableHand(index, this)
                 })
             }

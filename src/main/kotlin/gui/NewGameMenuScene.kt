@@ -6,6 +6,8 @@ import service.RootService
 import tools.aqua.bgw.components.uicomponents.*
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.*
+import tools.aqua.bgw.style.*
+import tools.aqua.bgw.visual.CompoundVisual
 
 /**
  * NewGameMenuScene is the visual for starting a new game, where you can enter the name for the two players
@@ -23,7 +25,7 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         width = 700, height = 80,
         posX = 610, posY = 150,
         text = "Combi-Duel",
-        font = Font(size = 60)
+        font = Font(70, Color(0, 0, 0), "IBMPlex Serif Medium")
     )
 
     // label that displays a card just for the looks
@@ -35,10 +37,10 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         height = 360,
         text = "",
         alignment = Alignment.CENTER,
-        visual = ImageVisual(
-            path = "AceOfSpades.jpg"
-        )
-    ).apply{
+        visual = CompoundVisual(ImageVisual(path = "AceOfSpades.jpg").apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
         rotation = 330.0
     }
 
@@ -51,10 +53,10 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         height = 360,
         text = "",
         alignment = Alignment.CENTER,
-        visual = ImageVisual(
-            path = "AceOfDiamonds.jpg"
-        )
-    ).apply{
+        visual = CompoundVisual(ImageVisual(path = "AceOfDiamonds.jpg").apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
         rotation = 30.0
     }
 
@@ -64,14 +66,10 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         width = 500, height = 80,
         posX = 710, posY = 400,
         prompt = "Name of Player 1",
-        font = Font(
-            size = 40,
-            color = Color(0, 0, 0),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
-        visual = ColorVisual(201, 201, 201)
+        font = Font(40, Color(0, 0, 0), "IBMPlex Serif Medium"),
+        visual = CompoundVisual(ColorVisual(201, 201, 201).apply {
+            style.borderRadius = BorderRadius(10)
+        })
     ).apply {
         onKeyPressed = {
             startButton.isDisabled = this.prompt != "Name of Player 1" || p2Input.prompt != "Name of Player 2"
@@ -84,14 +82,10 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         width = 500, height = 80,
         posX = 710, posY = 500,
         prompt = "Name of Player 2",
-        font = Font(
-            size = 40,
-            color = Color(0, 0, 0),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
-        visual = ColorVisual(201, 201, 201)
+        font = Font(40, Color(0, 0, 0), "IBMPlex Serif Medium"),
+        visual = CompoundVisual(ColorVisual(201, 201, 201).apply {
+            style.borderRadius = BorderRadius(10)
+        })
     ).apply {
         onKeyPressed = {
             startButton.isDisabled = this.prompt != "Name of Player 2" || p1Input.prompt != "Name of Player 1"
@@ -104,20 +98,20 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         width = 500, height = 80,
         posX = 710, posY = 650,
         text = "Start Game",
-        font = Font(
-            size = 40,
-            color = Color(255, 255, 255),
-            family = "Arial",
-            fontWeight = Font.FontWeight.NORMAL,
-            fontStyle = Font.FontStyle.NORMAL
-        )
+        font = Font(22, Color(255, 255, 255), "IBMPlex Serif Medium")
     ).apply {
-        visual = ColorVisual(82, 95, 61)
-        onMouseClicked = {
-            rootService.gameService.startGame(
-                p1Input.text.trim(),
-                p2Input.text.trim()
-            )
+        visual = CompoundVisual(ColorVisual(82, 95, 61).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+        try {
+            onMouseClicked = {
+                rootService.gameService.startGame(
+                    p1Input.text.trim(),
+                    p2Input.text.trim()
+                )
+            }
+        } catch (exception: IllegalArgumentException) {
+            errorWasThrown(exception)
         }
     }
 
@@ -127,19 +121,62 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
         width = 35, height = 35,
         posX = 1885, posY = 0,
         text = "X",
-        font = Font(
-            size = 18,
-            color = Color(256, 256, 256),
-            family = "Arial",
-            fontWeight = Font.FontWeight.EXTRA_BOLD,
-            fontStyle = Font.FontStyle.NORMAL
-        ),
+        font = Font(18, Color(255, 255, 255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
         isWrapText = false,
-        visual = ColorVisual(164, 18, 2)
-    ).apply{
+        visual = CompoundVisual(ColorVisual(164, 18, 2).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
         onMouseClicked = {
             CombiDuelApplication.exit()
+        }
+    }
+
+    private val errorPlane1 = Label(
+        posX = 460,
+        posY = 490,
+        width = 1000,
+        height = 100,
+        text = "",
+        alignment = Alignment.CENTER,
+        font = Font(70, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
+        isVisible = false
+    }
+    private val errorPlane2 = Label(
+        posX = 200,
+        posY = 200,
+        width = 1520,
+        height = 680,
+        alignment = Alignment.CENTER,
+        visual = CompoundVisual(
+            ColorVisual(color = Color(103, 119, 77, 180))
+                .apply { style.borderRadius = BorderRadius(10) })
+    ).apply {
+        isVisible = false
+    }
+
+    private val errorButton = Button(
+        posX = 900,
+        posY = 720,
+        width = 120,
+        height = 45,
+        text = "Okay",
+        font = Font(30, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        alignment = Alignment.CENTER,
+        visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
+            style.borderRadius = BorderRadius(10)
+        })
+    ).apply {
+        isVisible = false
+        onMouseClicked = {
+            errorPlane1.isVisible = false
+            errorPlane2.isVisible = false
+            isVisible = false
         }
     }
 
@@ -149,8 +186,17 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
             headlineLabel,
             card1, card2,
             p1Input, p2Input,
-            startButton, quitButton
+            startButton, quitButton,
+            errorPlane1, errorPlane2,
+            errorButton
         )
-        background = ColorVisual(132, 153,99)
+        background = ColorVisual(132, 153, 99)
+    }
+
+    private fun errorWasThrown(exception: Exception) {
+        errorPlane1.isVisible = true
+        errorPlane2.isVisible = true
+        errorButton.isVisible = true
+        errorPlane1.text = exception.toString()
     }
 }
