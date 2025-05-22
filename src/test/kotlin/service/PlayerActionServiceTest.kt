@@ -67,6 +67,9 @@ class PlayerActionServiceTest {
         assertFailsWith(IllegalArgumentException::class, "Player2's name is empty")
         {rootService.gameService.startGame("", "Moritz")}
         rootService.gameService.startGame("Max", "Moritz")
+
+        val testRefreshable = TestRefreshable(rootService)
+        rootService.addRefreshable(testRefreshable)
     }
 
     /**
@@ -78,6 +81,17 @@ class PlayerActionServiceTest {
     fun testStartGame(){
         assertFailsWith(IllegalArgumentException::class, "Game is already running")
         {rootService.gameService.startGame("Moritz", "Moritz")}
+    }
+
+    /**
+     * tests what happens when the game ends
+     */
+    @Test
+    fun testEndGame(){
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+        assertFailsWith(IllegalArgumentException::class, "The conditions for ending the games are not met" )
+        {rootService.gameService.endGame()}
     }
 
     /**
@@ -153,6 +167,15 @@ class PlayerActionServiceTest {
         currentGame.drawStack.clear()
         assertFailsWith(IllegalStateException::class, "Draw stack is empty, no card can be drawn")
         { rootService.playerActionService.drawCard() }
+
+        curPlayer =  currentGame.players[currentGame.currentPlayer]
+        rootService.playerActionService.swapCards(0,1)
+        curPlayer.handCards.clear()
+        curPlayer.handCards.addAll(cardsForSequence3)
+        rootService.playerActionService.playCombi(mutableListOf(0,1,2))
+
+        assertFailsWith(IllegalStateException::class, "You can only play another combi or pass")
+        {rootService.playerActionService.drawCard() }
     }
 
     /**
@@ -248,5 +271,24 @@ class PlayerActionServiceTest {
         curPlayer.lastAction = Action.NULL
         rootService.playerActionService.pass()
         assertTrue(currentGame.passCheck)
+    }
+
+    /**
+     * tests what happens when two actions where played and the second one is [Action.PASS]
+     */
+
+    @Test
+    fun testPassAndEndGame(){
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+        val curPlayer =  currentGame.players[currentGame.currentPlayer]
+        curPlayer.lastAction = Action.DRAW
+        currentGame.passCheck = true
+        rootService.playerActionService.pass()
+
+        assertFalse(currentGame.passCheck)
+
+        currentGame.passCheck = true
+        rootService.playerActionService.pass()
     }
 }
