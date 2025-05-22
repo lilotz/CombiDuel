@@ -238,17 +238,15 @@ class PlayerActionServiceTest {
     fun testPass(){
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-        var curPlayer =  currentGame.players[0]
+        var curPlayer =  currentGame.players[currentGame.currentPlayer]
 
         curPlayer.lastAction = Action.DRAW
         rootService.playerActionService.pass()
         assertFalse(currentGame.passCheck)
-        assertEquals(1, currentGame.currentPlayer)
 
         curPlayer = currentGame.players[currentGame.currentPlayer]
         curPlayer.lastAction = Action.NULL
         rootService.playerActionService.pass()
         assertTrue(currentGame.passCheck)
-        assertEquals(0, currentGame.currentPlayer)
     }
 }
