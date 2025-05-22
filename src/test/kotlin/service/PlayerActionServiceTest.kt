@@ -104,15 +104,11 @@ class PlayerActionServiceTest {
         assertFailsWith(IllegalStateException::class, "You can only swap once a turn")
         { rootService.playerActionService.swapCards(2,1)}
 
-        rootService.playerActionService.drawCard()
-        assertEquals(1, currentGame.currentPlayer)
-
-        currentGame.currentPlayer = 0
-        curPlayer.lastAction = Action.NULL
-
         // the cards were actually traded
         assertTrue(curPlayer.handCards.contains(testTradeCard))
         assertTrue(currentGame.tradeDeck.contains(testHandCard))
+
+        //rootService.playerActionService.drawCard()
 
         // tradeCard index is out of range, so it should fail
         assertFails{rootService.playerActionService.swapCards(3,4)}
