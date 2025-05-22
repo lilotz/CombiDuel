@@ -24,8 +24,6 @@ class CombiDuelScene(private val rootService: RootService) :
     BoardGameScene(1920, 1080, background = ColorVisual(Color(132, 153, 99))),
     Refreshable {
 
-    //TODO: Fehlermeldungen mit try {} catch {}; ActionsLeft-Button
-
     private val cards: BidirectionalMap<Card, CardView> = BidirectionalMap()
 
     private val cardImageLoader: CardImageLoader = CardImageLoader()
@@ -109,9 +107,9 @@ class CombiDuelScene(private val rootService: RootService) :
     // LinearLayout with three cards that can be traded
     private val tradeArea = LinearLayout<CardView>(
         posX = 700,
-        posY = 440,
+        posY = 415,
         width = 520,
-        height = 200,
+        height = 250,
         alignment = Alignment.CENTER,
         spacing = 30
     )
@@ -324,12 +322,6 @@ class CombiDuelScene(private val rootService: RootService) :
     }
 
     private fun applyHoverEffect(cardView: CardView) {
-        cardView.onMouseEntered = {
-            cardView.posY -= 25
-        }
-        cardView.onMouseExited = {
-            cardView.posY += 25
-        }
         cardView.width = 162.0
         cardView.height = 250.0
         cardView.rotation = 0.0
