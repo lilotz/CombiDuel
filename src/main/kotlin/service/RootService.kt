@@ -13,10 +13,22 @@ class RootService {
 
     var currentGame : CombiDuel? = null
 
+    /**
+    * adds Refreshables to GameService and PlayerActionService
+    *
+    * @param newRefreshable the [Refreshable] that should be added
+     */
+
     fun addRefreshable(newRefreshable: Refreshable) {
         gameService.addRefreshable(newRefreshable)
         playerActionService.addRefreshable(newRefreshable)
     }
+
+    /**
+     * adds each of the given [Refreshable]s to the connected services
+     *
+     * @param newRefreshables the [Refreshable]s that should be added
+     */
 
     fun addRefreshables(vararg newRefreshables: Refreshable) {
         newRefreshables.forEach { addRefreshable(it) }
