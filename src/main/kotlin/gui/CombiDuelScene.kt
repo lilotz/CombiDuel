@@ -11,6 +11,9 @@ import tools.aqua.bgw.visual.*
 import tools.aqua.bgw.components.uicomponents.*
 import tools.aqua.bgw.style.*
 
+// TODO: scale auf 1. für mouseCLicked, um Gegnerhände rauszunehmen; Actions Left-Button
+
+
 /**
  * CombiDuelScene is the main scene where the game is being played.
  * It shows the current player's hand cards, the trade area, the draw stack and the discard area for played combis.
@@ -21,7 +24,7 @@ import tools.aqua.bgw.style.*
  */
 
 class CombiDuelScene(private val rootService: RootService) :
-    BoardGameScene(1920, 1080, background = ColorVisual(Color(132, 153, 99))),
+    BoardGameScene(1920, 1080, background = ImageVisual("backround.png")),
     Refreshable {
 
     private val cards: BidirectionalMap<Card, CardView> = BidirectionalMap()
@@ -35,9 +38,9 @@ class CombiDuelScene(private val rootService: RootService) :
     // LinearLayout that contains of the player's hand cards
     private val playerHand = LinearLayout<CardView>(
         posX = 0,
-        posY = 780,
+        posY = 755,
         width = 1920,
-        height = 200,
+        height = 250,
         alignment = Alignment.CENTER,
         spacing = -60,
     )
@@ -99,8 +102,8 @@ class CombiDuelScene(private val rootService: RootService) :
             onMouseClicked = {
                 rootService.playerActionService.drawCard()
             }
-        } catch (exception: IllegalStateException) {
-            errorWasThrown(exception)
+        } catch (exception: Exception) {
+            errorWasThrown(exception.message)
         }
     }
 
@@ -117,21 +120,21 @@ class CombiDuelScene(private val rootService: RootService) :
     // This CardStack is used to display the top card of the play stack
     private val discardStack = CardStack<CardView>(
         posX = 100,
-        posY = 805,
+        posY = 835,
         width = 162,
         height = 200,
         alignment = Alignment.CENTER
     )
 
     // button with "Play Combi"
-    private val dropAreaLabel = Button(
+    private val playCombiButton = Button(
         posX = 80,
-        posY = 805,
+        posY = 835,
         width = 202,
         height = 100,
         text = "Play Combi",
         font = Font(30, Color(255, 255, 255), "IBMPlex Serif Medium"),
-        visual = CompoundVisual(ColorVisual(Color(82, 95, 61, 200)).apply {
+        visual = CompoundVisual(ColorVisual(Color(61, 68, 47, 200)).apply {
             style.borderRadius = BorderRadius(10)
         })
     ).apply {
@@ -141,21 +144,10 @@ class CombiDuelScene(private val rootService: RootService) :
                     rootService.playerActionService.playCombi(indexSelectedHandCards)
                 }
             }
-        } catch (exception: IllegalStateException) {
-            errorWasThrown(exception)
+        } catch (exception: Exception) {
+            errorWasThrown(exception.message)
         }
     }
-
-    // area to where the chosen cards which should form a combi can be delivered
-    private val dropArea = Area<CardView>(
-        posX = 50,
-        posY = 680,
-        width = 262,
-        height = 350,
-        visual = CompoundVisual(
-            ColorVisual(color = Color(103, 119, 77, 180))
-                .apply { style.borderRadius = BorderRadius(10) })
-    )
 
     // button with which the current player can pass
     private val passButton = Button(
@@ -176,7 +168,7 @@ class CombiDuelScene(private val rootService: RootService) :
         }
     }
 
-    // button with which the current player can pass
+    // button with which the current player can trade two cards
     private val tradeButton = Button(
         posX = 1690,
         posY = 790,
@@ -199,8 +191,8 @@ class CombiDuelScene(private val rootService: RootService) :
                     )
                 }
             }
-        } catch (exception: IllegalStateException) {
-            errorWasThrown(exception)
+        } catch (exception: Exception) {
+            errorWasThrown(exception.message)
         }
     }
 
@@ -237,12 +229,12 @@ class CombiDuelScene(private val rootService: RootService) :
 
     // button with which the players can say they have changed their seats
     private val changeButton = Button(
-        posX = 900,
-        posY = 720,
-        width = 120,
-        height = 45,
+        posX = 810,
+        posY = 700,
+        width = 300,
+        height = 80,
         text = "Okay",
-        font = Font(30, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
+        font = Font(40, Color(0xFFFFFFF), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
         visual = CompoundVisual(ColorVisual(color = Color(82, 95, 61)).apply {
             style.borderRadius = BorderRadius(10)
@@ -307,9 +299,9 @@ class CombiDuelScene(private val rootService: RootService) :
             opponentName,
             drawStack,
             tradeArea,
-            dropArea,
+            //discardArea,
             discardStack,
-            dropAreaLabel,
+            playCombiButton,
             passButton,
             tradeButton,
             changePlane2,
@@ -361,11 +353,12 @@ class CombiDuelScene(private val rootService: RootService) :
         }
     }
 
-    private fun errorWasThrown(exception: Exception) {
+    private fun errorWasThrown(exceptionMessage: String?){
         errorPlane1.isVisible = true
         errorPlane2.isVisible = true
         errorButton.isVisible = true
-        errorPlane1.text = exception.toString()
+        checkNotNull(exceptionMessage)
+        errorPlane1.text = exceptionMessage
     }
 
     /**
@@ -396,7 +389,6 @@ class CombiDuelScene(private val rootService: RootService) :
         val curPlayer = game.players[game.currentPlayer]
 
         playerName.text = "${curPlayer.name} : ${curPlayer.score} Points"
-        //playerName.text = "${curPlayer.name} : ${curPlayer.score.toString()} Points"
 
         playerHand.clear()
         curPlayer.handCards.forEachIndexed { index, card ->
@@ -471,9 +463,7 @@ class CombiDuelScene(private val rootService: RootService) :
         changePlane1.text = "It is now ${curPlayer.name}'s turn!"
 
         playerName.text = "${curPlayer.name} : ${curPlayer.score} Points"
-        //playerName.text = "${curPlayer.name} : ${curPlayer.score.toString()} Points"
         opponentName.text = "${opponent.name} : ${opponent.score} Points"
-        //opponentName.text = "${opponent.name} : ${opponent.score.toString()} Points"
 
         playerHand.clear()
         opponentHand.clear()

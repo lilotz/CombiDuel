@@ -60,32 +60,29 @@ class GameFinishedMenuScene(private val rootService: RootService) : MenuScene(19
 
     // button that when clicked starts a new game
     private val startNewGameButton = Button(
-        posX = 860,
-        posY = 950,
-        width = 200,
+        posX = 710,
+        posY = 940,
+        width = 500,
         height = 60,
         text = "Start New Game",
-        font = Font(56, Color(255, 255, 255), "IBMPlex Serif Medium"),
+        font = Font(30, Color(255, 255, 255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
         visual = CompoundVisual(ColorVisual(82, 95, 61).apply{
             style.borderRadius = BorderRadius(10) })
     ).apply {
-        onMouseClicked = { rootService.gameService.onAllRefreshables { refreshAfterRestart() } }
+        onMouseClicked = { rootService.gameService.restartNewGame() }
     }
 
     // button that when clicked closes the game
-    private val quitButton = Button(
+    val quitButton = Button(
         width = 35, height = 35,
         posX = 1885, posY = 0,
         text = "X",
         font = Font(18, Color(255,255,255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
         isWrapText = false,
-        visual = CompoundVisual(ColorVisual(164, 18, 2).apply{
-            style.borderRadius = BorderRadius(10) })
-    ).apply {
-        onMouseClicked = { CombiDuelApplication.exit() }
-    }
+        visual = CompoundVisual(ColorVisual(164, 18, 2))
+    )
 
     // Initialize the scene by setting the background color and adding all components to the content pane
     init{

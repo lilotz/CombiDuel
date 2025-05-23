@@ -91,6 +91,16 @@ data class GameService(private val rootService: RootService): AbstractRefreshing
     }
 
     /**
+     * Function for restarting a new game
+     *
+     * Sets the rootService.currentGame back to null
+     */
+    fun restartNewGame(){
+        rootService.currentGame = null
+        onAllRefreshables { refreshAfterRestart() }
+    }
+
+    /**
      * DefaultRandomCardLists shuffles the necessary 52 cards for the start of the game
      */
 

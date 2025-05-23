@@ -9,15 +9,19 @@ import tools.aqua.bgw.util.Font
  * Main class of the Combi Duel Application
  */
 
-object CombiDuelApplication : BoardGameApplication("CombiDuel"), Refreshable {
+class CombiDuelApplication : BoardGameApplication("CombiDuel"), Refreshable {
 
     private val rootService = RootService()
 
     private val gameScene = CombiDuelScene(rootService)
 
-    private val gameFinishedMenuScene = GameFinishedMenuScene(rootService)
+    private val gameFinishedMenuScene = GameFinishedMenuScene(rootService).apply {
+        quitButton.onMouseClicked = { exit() }
+    }
 
-    private val newGameMenuScene = NewGameMenuScene(rootService)
+    private val newGameMenuScene = NewGameMenuScene(rootService).apply {
+        quitButton.onMouseClicked = { exit() }
+    }
 
     init {
         loadFont("IBMPlexSerif-Medium.ttf", "IBMPlex Serif Medium", Font.FontWeight.MEDIUM)

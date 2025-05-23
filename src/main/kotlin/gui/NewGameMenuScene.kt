@@ -117,21 +117,15 @@ class NewGameMenuScene(private val rootService: RootService) : MenuScene(1920, 1
 
     // Button that exits the game
 
-    private val quitButton = Button(
+    val quitButton = Button(
         width = 35, height = 35,
         posX = 1885, posY = 0,
         text = "X",
         font = Font(18, Color(255, 255, 255), "IBMPlex Serif Medium"),
         alignment = Alignment.CENTER,
         isWrapText = false,
-        visual = CompoundVisual(ColorVisual(164, 18, 2).apply {
-            style.borderRadius = BorderRadius(10)
-        })
-    ).apply {
-        onMouseClicked = {
-            CombiDuelApplication.exit()
-        }
-    }
+        visual = CompoundVisual(ColorVisual(164, 18, 2))
+    )
 
     private val errorPlane1 = Label(
         posX = 460,

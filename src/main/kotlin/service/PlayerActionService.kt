@@ -287,7 +287,6 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
                 rootService.gameService.endGame()}
             else {
                 game.passCheck = false
-                curPlayer.lastAction = Action.PASS
                 rootService.gameService.endTurn()
             }
         }

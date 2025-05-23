@@ -6,6 +6,6 @@ import gui.CombiDuelApplication
  * Once the application is closed, it prints a message indicating the end of the application.
  */
 fun main() {
-    CombiDuelApplication.show()
+    CombiDuelApplication().show()
     println("Application ended. We hope you had fun. Goodbye")
 }
