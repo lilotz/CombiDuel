@@ -98,10 +98,11 @@ class CombiDuelScene(private val rootService: RootService) :
         visual = CompoundVisual(ColorVisual(Color(82, 95, 61)).apply {
             style.borderRadius = BorderRadius(topLeft = 10, topRight = 10, bottomRight = 0, bottomLeft = 0)
         })
-    ).apply{
+    ).apply {
         isVisible = false
     }
-     // how many actions are left for the current player
+
+    // how many actions are left for the current player
     private val actionsLeftSize = Label(
         posX = 80,
         posY = 540,
@@ -112,9 +113,9 @@ class CombiDuelScene(private val rootService: RootService) :
         visual = CompoundVisual(ColorVisual(Color(82, 95, 61)).apply {
             style.borderRadius = BorderRadius(topLeft = 0, topRight = 0, bottomRight = 10, bottomLeft = 10)
         })
-    ).apply{
-         isVisible = false
-     }
+    ).apply {
+        isVisible = false
+    }
 
     // stack whit cards that can be drawn
     private val drawStack = CardView(
@@ -131,7 +132,7 @@ class CombiDuelScene(private val rootService: RootService) :
                 rootService.playerActionService.drawCard()
             }
         } catch (exception: IllegalStateException) {
-            val exceptionMessage = exception.message?: "Invalid Action"
+            val exceptionMessage = exception.message ?: "Invalid Action"
             errorWasThrown(exceptionMessage)
         }
     }
@@ -152,7 +153,7 @@ class CombiDuelScene(private val rootService: RootService) :
                 rootService.playerActionService.drawCard()
             }
         } catch (exception: IllegalStateException) {
-            val exceptionMessage = exception.message?: "Invalid Action"
+            val exceptionMessage = exception.message ?: "Invalid Action"
             errorWasThrown(exceptionMessage)
         }
     }
@@ -196,7 +197,7 @@ class CombiDuelScene(private val rootService: RootService) :
                 }
             }
         } catch (exception: IllegalStateException) {
-            val exceptionMessage = exception.message?: "Invalid Action"
+            val exceptionMessage = exception.message ?: "Invalid Action"
             errorWasThrown(exceptionMessage)
         }
     }
@@ -246,7 +247,7 @@ class CombiDuelScene(private val rootService: RootService) :
                 }
             }
         } catch (exception: IllegalStateException) {
-            val exceptionMessage = exception.message?: "Invalid Action"
+            val exceptionMessage = exception.message ?: "Invalid Action"
             errorWasThrown(exceptionMessage)
         }
     }
@@ -428,13 +429,88 @@ class CombiDuelScene(private val rootService: RootService) :
         errorPlane1.text = exceptionMessage
     }
 
-    private fun updateActionsLeftSize(){
+    private fun updateActionsLeftSize() {
         val game = rootService.currentGame ?: return
         val curPlayer = game.players[game.currentPlayer]
 
-        when(curPlayer.lastAction) {
+        when (curPlayer.lastAction) {
             Action.NULL -> actionsLeftSize.text = "1"
             else -> actionsLeftSize.text = "0"
+        }
+    }
+
+    private fun refreshAfterChangePlayerAfterDelay() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+        val curPlayer = game.players[game.currentPlayer]
+        val opponent = game.players[(game.currentPlayer + 1) % game.players.size]
+
+        indexSelectedHandCards.clear()
+        indexSelectedTradeCard.clear()
+
+        changePlane2.isVisible = true
+        changePlane1.isVisible = true
+        changeButton.isVisible = true
+        passButton.isVisible = false
+        tradeButton.isVisible = false
+
+        changePlane1.text = "It is now ${curPlayer.name}'s turn!"
+
+        playerName.text = "${curPlayer.name} : ${curPlayer.score} Points"
+        opponentName.text = "${opponent.name} : ${opponent.score} Points"
+
+        actionsLeftSize.text = "2"
+
+        playerHand.clear()
+        opponentHand.clear()
+        discardStack.clear()
+        tradeArea.clear()
+
+        game.tradeDeck.forEachIndexed { index, card ->
+            tradeArea.add((cards[card]).apply {
+                applyHoverEffect(this)
+                this.posY = 0.0
+                makeItClickableTrade(index, this)
+            })
+        }
+
+        curPlayer.handCards.forEach { card ->
+            playerHand.add((cards[card]).apply {
+                this.posY = 0.0
+                removeHoverEffect(this)
+            })
+        }
+
+        curPlayer.disposalArea.forEach { card ->
+            discardStack.push(cards[card])
+        }
+
+        opponent.handCards.forEach { card ->
+            opponentHand.add((cards[card]).apply {
+                this.posY = 0.0
+                removeHoverEffect(this)
+                makeItClickableOpponentHand(this)
+            })
+        }
+
+        changeButton.onMouseClicked = {
+            changePlane2.isVisible = false
+            changePlane1.isVisible = false
+            changeButton.isVisible = false
+            playCombiButton.isVisible = true
+            passButton.isVisible = true
+            tradeButton.isVisible = true
+            actionsLeft.isVisible = true
+            actionsLeftSize.isVisible = true
+
+            playerHand.clear()
+            curPlayer.handCards.forEachIndexed { index, card ->
+                playerHand.add((cards[card]).apply {
+                    applyHoverEffect(this)
+                    this.posY = 0.0
+                    makeItClickablePlayerHand(index, this)
+                })
+            }
         }
     }
 
@@ -466,6 +542,10 @@ class CombiDuelScene(private val rootService: RootService) :
         }
     }
 
+    /**
+     * is called by the service layer after a valid combi was played
+     */
+
     override fun refreshAfterEvaluatingCombi(player: Player, playedCombi: List<Card>) {
         val game = rootService.currentGame ?: return
         val curPlayer = game.players[game.currentPlayer]
@@ -487,6 +567,10 @@ class CombiDuelScene(private val rootService: RootService) :
             discardStack.push(cards[card])
         }
     }
+
+    /**
+     * is called by the service layer after a card was drawn
+     */
 
     override fun refreshAfterDrawCard(player: Player, card: Card) {
         val game = rootService.currentGame ?: return
@@ -510,6 +594,10 @@ class CombiDuelScene(private val rootService: RootService) :
             else -> drawStackSize.text = game.drawStack.size.toString()
         }
     }
+
+    /**
+     * is called by the service layer after the player swaps two cards
+     */
 
     override fun refreshAfterSwapCard(player: Player, oldHandCard: Card, oldTradeCards: Card) {
         val game = rootService.currentGame ?: return
@@ -539,81 +627,14 @@ class CombiDuelScene(private val rootService: RootService) :
         indexSelectedTradeCard.clear()
     }
 
+    /**
+     * is called by the service layer after a player ends their turn
+     */
+
     override fun refreshAfterChangePlayer() {
         val delay = DelayAnimation(800)
         delay.onFinished = {
-            val game = rootService.currentGame
-            checkNotNull(game)
-            val curPlayer = game.players[game.currentPlayer]
-            val opponent = game.players[(game.currentPlayer + 1) % game.players.size]
-
-            indexSelectedHandCards.clear()
-            indexSelectedTradeCard.clear()
-
-            changePlane2.isVisible = true
-            changePlane1.isVisible = true
-            changeButton.isVisible = true
-            passButton.isVisible = false
-            tradeButton.isVisible = false
-
-            changePlane1.text = "It is now ${curPlayer.name}'s turn!"
-
-            playerName.text = "${curPlayer.name} : ${curPlayer.score} Points"
-            opponentName.text = "${opponent.name} : ${opponent.score} Points"
-
-            actionsLeftSize.text = "2"
-
-            playerHand.clear()
-            opponentHand.clear()
-            discardStack.clear()
-            tradeArea.clear()
-
-            game.tradeDeck.forEachIndexed { index, card ->
-                tradeArea.add((cards[card]).apply {
-                    applyHoverEffect(this)
-                    this.posY = 0.0
-                    makeItClickableTrade(index, this)
-                })
-            }
-
-            curPlayer.handCards.forEach { card ->
-                playerHand.add((cards[card]).apply {
-                    this.posY = 0.0
-                    removeHoverEffect(this)
-                })
-            }
-
-            curPlayer.disposalArea.forEach { card ->
-                discardStack.push(cards[card])
-            }
-
-            opponent.handCards.forEach { card ->
-                opponentHand.add((cards[card]).apply {
-                    this.posY = 0.0
-                    removeHoverEffect(this)
-                    makeItClickableOpponentHand(this)
-                })
-            }
-
-            changeButton.onMouseClicked = {
-                changePlane2.isVisible = false
-                changePlane1.isVisible = false
-                changeButton.isVisible = false
-                playCombiButton.isVisible = true
-                passButton.isVisible = true
-                tradeButton.isVisible = true
-                actionsLeft.isVisible = true
-                actionsLeftSize.isVisible = true
-
-                playerHand.clear()
-                curPlayer.handCards.forEachIndexed { index, card ->
-                    playerHand.add((cards[card]).apply {
-                        applyHoverEffect(this)
-                        this.posY = 0.0
-                        makeItClickablePlayerHand(index, this)
-                    })
-                }
-            }
+            refreshAfterChangePlayerAfterDelay()
             unlock()
         }
         lock()

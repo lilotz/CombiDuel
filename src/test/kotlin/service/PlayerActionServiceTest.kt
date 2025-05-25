@@ -55,6 +55,27 @@ class PlayerActionServiceTest {
         Card(CardSuit.CLUBS, CardValue.TWO),
         Card(CardSuit.CLUBS, CardValue.ACE))
 
+    private val cardsForSequence5 = mutableListOf(
+        Card(CardSuit.HEARTS, CardValue.SEVEN),
+        Card(CardSuit.HEARTS, CardValue.EIGHT),
+        Card(CardSuit.HEARTS, CardValue.NINE),
+        Card(CardSuit.HEARTS, CardValue.TEN),
+        Card(CardSuit.HEARTS, CardValue.JACK)
+    )
+
+    private val cardsForSequence6 = mutableListOf(
+        Card(CardSuit.HEARTS, CardValue.SIX),
+        Card(CardSuit.HEARTS, CardValue.SEVEN),
+        Card(CardSuit.HEARTS, CardValue.EIGHT),
+        Card(CardSuit.HEARTS, CardValue.NINE),
+        Card(CardSuit.HEARTS, CardValue.TEN),
+        Card(CardSuit.HEARTS, CardValue.JACK),
+        Card(CardSuit.HEARTS, CardValue.QUEEN),
+        Card(CardSuit.HEARTS, CardValue.KING),
+        Card(CardSuit.HEARTS, CardValue.ACE),
+        Card(CardSuit.HEARTS, CardValue.TWO)
+    )
+
     /**
      * sets up a game with two test players: Max and Moritz
      */
@@ -92,6 +113,14 @@ class PlayerActionServiceTest {
         checkNotNull(currentGame)
         assertFailsWith(IllegalArgumentException::class, "The conditions for ending the games are not met" )
         {rootService.gameService.endGame()}
+    }
+
+    @Test
+    fun testRestartGame(){
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+        rootService.gameService.restartNewGame()
+        assertEquals(null, rootService.currentGame)
     }
 
     /**
@@ -249,6 +278,16 @@ class PlayerActionServiceTest {
 
         assertEquals(15+8+10+10, curPlayer.score)
         assertEquals(0, curPlayer.handCards.size)
+
+        curPlayer.handCards.addAll(cardsForSequence5)
+
+        rootService.playerActionService.playCombi(mutableListOf(0,1,2,3,4))
+
+        assertEquals(15+8+10+10+10, curPlayer.score)
+        assertEquals(0, curPlayer.handCards.size)
+
+        curPlayer.handCards.addAll(cardsForSequence6)
+        rootService.playerActionService.playCombi(mutableListOf(0,1,2,3,4,5,6,7,8,9))
 
         rootService.playerActionService.pass()
     }

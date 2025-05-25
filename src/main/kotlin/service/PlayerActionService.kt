@@ -242,10 +242,29 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         val game = rootService.currentGame
         checkNotNull(game)
         val curPlayer = game.players[game.currentPlayer]
+
+        var hasAce = false
+        var hasTwo = false
+
         // combi has to be sorted by values, so it can't be evaluated better
         val chosenHandCards = mutableListOf<Card>()
         for(i in combi.indices){ chosenHandCards.add(curPlayer.handCards[combi[i]]) }
-        val chosenHandCardsMap = chosenHandCards.map{(it.value.ordinal+combi.size)%13}
+
+        for (suit in CardSuit.entries){
+            if (chosenHandCards.contains(Card(suit, CardValue.TWO))) {
+                hasTwo = true
+            }
+            if(chosenHandCards.contains(Card(suit, CardValue.ACE))) {
+                hasAce = true
+            }
+        }
+
+        val chosenHandCardsMap = if (hasTwo && hasAce) {
+            chosenHandCards.map{(it.value.ordinal+combi.size)%13}
+        } else {
+            chosenHandCards.map{(it.value.ordinal)}
+        }
+
         val chosenHandCardsSorted = chosenHandCardsMap.sortedWith(compareBy{ it })
         val size = chosenHandCardsSorted.size
         for (i in 0..size - 2) {
