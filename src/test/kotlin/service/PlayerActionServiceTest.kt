@@ -115,6 +115,10 @@ class PlayerActionServiceTest {
         {rootService.gameService.endGame()}
     }
 
+    /**
+     * tests if a game is restarted properly
+     */
+
     @Test
     fun testRestartGame(){
         val currentGame = rootService.currentGame

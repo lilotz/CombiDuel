@@ -137,6 +137,7 @@ class CombiDuelScene(private val rootService: RootService) :
         }
     }
 
+    // label with how many cards are left in the draw stack
     private val drawStackSize = Label(
         posX = 1550,
         posY = 515,
