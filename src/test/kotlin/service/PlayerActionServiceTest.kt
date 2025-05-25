@@ -232,7 +232,7 @@ class PlayerActionServiceTest {
 
        curPlayer.handCards.addAll(cardsForSequence2)
 
-        assertFailsWith(IllegalArgumentException::class, "The cards you've chosen were not a valid combi" )
+        assertFailsWith(IllegalStateException::class, "The cards you've chosen were not a valid combi" )
         { rootService.playerActionService.playCombi(mutableListOf(0,1,3,4))}
 
         curPlayer.handCards.clear()

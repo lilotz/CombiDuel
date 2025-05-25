@@ -136,7 +136,7 @@ data class PlayerActionService(private val rootService: RootService): AbstractRe
         // since we empty combi after receiving a valid combi if everything does not apply,
         // it was not a valid combi
         if(curPlayer.score == oldScore)
-        {throw IllegalArgumentException("The cards you've chosen were not a valid combi")}
+        {throw IllegalStateException("The cards you've chosen were not a valid combi")}
 
         if (curPlayer.lastAction != Action.NULL && curPlayer.lastAction != Action.COMBI){
             curPlayer.secondActionCombi = true
